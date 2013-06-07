@@ -78,10 +78,8 @@ test('setup', function (t) {
     }, function (s) {
         t.ok(s, 'server ok');
         t.ok(s.backend, 'server backend ok');
-        
         server = s;
         backend = s.backend;
-        
         s.start(function () {
             client = restify.createJsonClient({
                 log: s.log,
@@ -242,7 +240,8 @@ test('GET /packages (Search by name)', {skip: true}, function (t) {
 });
 
 
-test('GET /packages (Search by multiple fields [owner_uuid, name])', {skip: true}, function (t) {
+test('GET /packages (Search by multiple fields [owner_uuid, name])',
+        {skip: true}, function (t) {
     // Would need to preload several packages
     t.end();
 });
@@ -261,7 +260,8 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
         'vcpus': 4
     };
 
-    client.put('/packages/' + PACKAGE.uuid, immutable, function (err, req, res, pkg) {
+    client.put('/packages/' + PACKAGE.uuid, immutable,
+        function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
         t.ok(/is immutable/.test(err.message));
@@ -340,7 +340,8 @@ test('DELETE /packages/:uuid (404)', function (t) {
 
 
 test('DELETE /packages/:uuid (--force)', function (t) {
-    client.del('/packages/' + PACKAGE.uuid + '?force=true', function (err, req, res) {
+    client.del('/packages/' + PACKAGE.uuid + '?force=true',
+        function (err, req, res) {
         t.ifError(err);
         t.equal(res.statusCode, 204);
         t.end();
