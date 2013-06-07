@@ -71,7 +71,7 @@ $(TAP): | $(NPM_EXEC)
 CLEAN_FILES += $(TAP) ./node_modules/tap
 
 .PHONY: release
-release: check build docs
+release: check all docs
 	@echo "Building $(RELEASE_TARBALL)"
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/papi
 	@mkdir -p $(TMPDIR)/site
