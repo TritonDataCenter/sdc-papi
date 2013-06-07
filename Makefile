@@ -13,7 +13,7 @@
 # other projects too, you should add these to the original versions of the
 # included Makefiles (in eng.git) so that other teams can use them too.
 #
-
+NAME		:= papi
 #
 # Tools
 #
@@ -46,6 +46,18 @@ else
 endif
 include ./tools/mk/Makefile.smf.defs
 
+# Mountain Gorilla-spec'd versioning.
+
+
+ROOT                    := $(shell pwd)
+RELEASE_TARBALL         := $(NAME)-pkg-$(STAMP).tar.bz2
+TMPDIR                  := /tmp/$(STAMP)
+
+#
+# Env vars
+#
+PATH	:= $(NODE_INSTALL)/bin:/opt/local/bin:${PATH}
+
 #
 # Repo-specific targets
 #
@@ -57,6 +69,37 @@ $(TAP): | $(NPM_EXEC)
 	$(NPM) install
 
 CLEAN_FILES += $(TAP) ./node_modules/tap
+
+.PHONY: release
+release: check build docs
+	@echo "Building $(RELEASE_TARBALL)"
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/papi
+	@mkdir -p $(TMPDIR)/site
+	@touch $(TMPDIR)/site/.do-not-delete-me
+	@mkdir -p $(TMPDIR)/root
+	cp -r	$(ROOT)/build \
+		$(ROOT)/bin \
+		$(ROOT)/etc \
+		$(ROOT)/lib \
+		$(ROOT)/server.js \
+		$(ROOT)/node_modules \
+		$(ROOT)/package.json \
+		$(ROOT)/smf \
+		$(ROOT)/test \
+		$(TMPDIR)/root/opt/smartdc/papi/
+	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
+	@rm -rf $(TMPDIR)
+
+
+.PHONY: publish
+publish: release
+	@if [[ -z "$(BITS_DIR)" ]]; then \
+	  echo "error: 'BITS_DIR' must be set for 'publish' target"; \
+	  exit 1; \
+	fi
+	mkdir -p $(BITS_DIR)/$(NAME)
+	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
+
 
 .PHONY: test
 test: $(TAP)
