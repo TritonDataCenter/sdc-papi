@@ -7,3 +7,5 @@ cscope.in.out
 cscope.po.out
 cscope.out
 smf/manifests/bapi.xml
+etc/config.json
+etc/packages.json
