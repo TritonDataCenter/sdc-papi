@@ -11,9 +11,11 @@
     "bunyan": "0.21.3",
     "sigyan": "0.2.0",
     "backoff": "2.3.0",
-    "moray": "git+ssh://git@git.joyent.com:node-moray.git#31cafb6bd9481358c2b5c2aa7b4b437814b452d8",
+    "moray": "git+ssh://git@git.joyent.com:node-moray.git#31cafb6b",
+    "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#c9048948",
     "semver": "1.1.0",
-    "ldapjs": "0.6.3"
+    "ldapjs": "0.6.3",
+    "vasync": "1.3.3"
   },
   "devDependencies": {
     "tap": "0.4.0"
