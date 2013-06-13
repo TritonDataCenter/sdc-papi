@@ -12,6 +12,7 @@ var SOCKET = '/tmp/.' + uuid();
 var util = require('util');
 var path = require('path');
 var fs = require('fs');
+var qs = require('querystring');
 
 var papi = require('../lib/papi');
 
@@ -222,29 +223,88 @@ test('GET /packages/:uuid (404)', function (t) {
 });
 
 
-test('GET /packages (Search by owner_uuid)', {skip: true}, function (t) {
-    // Would need to preload several packages
-    t.end();
+test('GET /packages (Search by owner_uuid)', function (t) {
+    var q = '/packages?owner_uuid=' + config.ufds_admin_uuid;
+    client.get(q, function (err, req, res, obj) {
+        t.ifError(err, 'GET /packages error');
+        t.equal(res.statusCode, 200, 'status code (200 OK)');
+        t.ok(res.headers['x-resource-count'], 'x-resource-count');
+        t.ok(Array.isArray(obj), 'Packages list');
+        obj.forEach(function (p) {
+            t.ok(p.uuid !== PACKAGE.uuid);
+        });
+        t.end();
+    });
 });
 
 
-test('GET /packages (Search by group)', {skip: true}, function (t) {
-    // Would need to preload several packages
-    t.end();
+test('GET /packages (Search by group)', function (t) {
+    var q = '/packages?group=ramones';
+    client.get(q, function (err, req, res, obj) {
+        t.ifError(err, 'GET /packages error');
+        t.equal(res.statusCode, 200, 'status code (200 OK)');
+        t.ok(res.headers['x-resource-count'], 'x-resource-count');
+        t.ok(Array.isArray(obj), 'Packages list');
+        t.ok(obj.length);
+        t.equal(obj[0].group, 'ramones');
+        t.end();
+    });
 });
 
 
-test('GET /packages (Search by name)', {skip: true}, function (t) {
-    // Would need to preload several packages
-    t.end();
+test('GET /packages (Search by name)', function (t) {
+    var q = '/packages?name=sdc_128';
+    client.get(q, function (err, req, res, obj) {
+        t.ifError(err, 'GET /packages error');
+        t.equal(res.statusCode, 200, 'status code (200 OK)');
+        t.ok(res.headers['x-resource-count'], 'x-resource-count');
+        t.ok(Array.isArray(obj), 'Packages list');
+        t.ok(obj.length);
+        t.equal(obj[0].max_physical_memory, 128);
+        t.end();
+    });
 });
 
 
-test('GET /packages (Search by multiple fields [owner_uuid, name])',
-        {skip: true}, function (t) {
-    // Would need to preload several packages
-    t.end();
+test('GET /packages (Search by multiple fields)', function (t) {
+    var q = '/packages?name=sdc_128&owner_uuid=' + uuid();
+    client.get(q, function (err, req, res, obj) {
+        t.ifError(err, 'GET /packages error');
+        t.equal(res.statusCode, 200, 'status code (200 OK)');
+        t.ok(res.headers['x-resource-count'], 'x-resource-count');
+        t.ok(Array.isArray(obj), 'Packages list');
+        t.equal(obj.length, 0);
+        t.end();
+    });
 });
+
+
+test('GET /packages (Custom filter)', function (t) {
+    var query = qs.escape('(&(max_physical_memory>=128)' +
+            '(zfs_io_priority=20))');
+    var q = '/packages?filter=' + query;
+    client.get(q, function (err, req, res, obj) {
+        t.ifError(err, 'GET /packages error');
+        t.equal(res.statusCode, 200, 'status code (200 OK)');
+        t.ok(res.headers['x-resource-count'], 'x-resource-count');
+        t.ok(Array.isArray(obj), 'Packages list');
+        t.ok(obj.length);
+        t.end();
+    });
+});
+
+
+test('GET /packages (Custom invalid filter)', function (t) {
+    var query = qs.escape('(&(max_physical_memory>=128)' +
+            'zfs_io_priority=20)');
+    var q = '/packages?filter=' + query;
+    client.get(q, function (err, req, res, obj) {
+        t.equal(res.statusCode, 409, 'status code (409)');
+        t.equal(err.message, 'Provided search filter is not valid');
+        t.end();
+    });
+});
+
 
 
 test('PUT /packages/:uuid (immutable fields)', function (t) {
