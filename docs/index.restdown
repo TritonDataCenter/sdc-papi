@@ -10,6 +10,9 @@ Note that, internally, with independence of the name choosen by Marketing,
 specifications used to create a machine from a given image are called packages,
 and referred as packages by all the APIs.
 
+Some of the package attributes are used by `vmadm` to create/resize machines.
+Please, refer to [vmadm man page](https://github.com/joyent/smartos-live/blob/master/src/vm/man/vmadm.1m.md#properties) to
+review the meaning of these properties for the machines.
 
 # PackageObjects
 
