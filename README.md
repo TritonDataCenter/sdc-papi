@@ -9,17 +9,14 @@ Tickets/bugs: <https://devhub.joyent.com/jira/browse/PAPI>
 
 # Overview
 
-This repo serves two purposes: (1) It defines the guidelines and best
-practices for Joyent engineering work (this is the primary goal), and (2) it
-also provides boilerplate for an SDC project repo, giving you a starting
-point for many of the suggestion practices defined in the guidelines. This is
-especially true for node.js-based REST API projects.
+This is the repo for SDC 7 Packages API, an HTTP interface to
+SDC Packages. See [docs](https://mo.joyent.com/docs/papi) for the details
 
-Start with the guidelines: <https://mo.joyent.com/docs/eng>
+Start with the guidelines: <https://mo.joyent.com/docs/papi>
 
 # Development
 
-To run the boilerplate API server:
+To run the Packages API server:
 
     git clone git@git.joyent.com:papi.git
     cd papi
@@ -27,7 +24,7 @@ To run the boilerplate API server:
     make all
     ./build/node/bin/node server.js | ./node_modules/.bin/bunyan
 
-To update the guidelines, edit "docs/index.restdown" and run `make docs`
+To update the docs, edit "docs/index.restdown" and run `make docs`
 to update "docs/index.html".
 
 Before commiting/pushing run `make prepush` and, if possible, get a code
@@ -45,13 +42,10 @@ here.
 
 # PENDING
 
-- usb-headnode.git a523809b5a8cc8ad41ceef169837652b9a0bc807
 - Import packages from LDAP
-- Create sdc_* packages on PAPI bootstrap (1st boot, if needed). Need to populate `etc/bootstrap-packages.json` from zone setup usb-headnode/SAPI
+
 - Figure out how to add a new zone with SAPI
-- PAPI must boot side by side with ufds zone. Should I just try to run PAPI service
-into ufds zone? => NO, wouldn't be able to upgrade PAPI using images w/o UFDS downtime.
+
 - CMD line tool "sdc-packages"
 - node-sdc-clients PAPI client.
 - Docs.
-- Add pending tests for package searches
