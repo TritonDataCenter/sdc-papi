@@ -1,7 +1,7 @@
 ---
 title: SDC 7 Package API
 markdown2extras: wiki-tables, code-friendly
-apisections: Package Objects, Packages, Ping, Changelog
+apisections: PackageObjects, Packages, Ping, Changelog
 ---
 
 # SDC 7 Package API
@@ -11,7 +11,7 @@ specifications used to create a machine from a given image are called packages,
 and referred as packages by all the APIs.
 
 
-## Package Objects
+# PackageObjects
 
 Package entries are stored in Moray in the form of JSON objects. Here is
 an example of a package:
