@@ -1,7 +1,7 @@
 ---
 title: SDC 7 Package API
 markdown2extras: wiki-tables, code-friendly
-apisections: Ping, VMs, VM Snapshots, VM Metadata, Jobs, Changelog
+apisections: Package Objects, Packages, Ping, Changelog
 ---
 
 # SDC 7 Package API
