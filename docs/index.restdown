@@ -71,7 +71,7 @@ an example of a package:
 ||overprovision_io||Optional||Overprovision IO, 1=don't overprovision, 2=overprovision||
 
 
-### Immutable Attributes and Package Persistence
+## Immutable Attributes and Package Persistence
 
 Additionally, the following package attributes are considered _immutable_:
 `uuid`, `name`, `version`, `quota`, `max_swap`, `max_physical_memory`,
@@ -98,3 +98,224 @@ a package will result into a `405` HTTP response.
 
 Once a package has been used as the base specification to create a machine, it
 must be available as source of information for billing systems forever.
+
+# Packages
+
+The Packages endpoint let us get information about Packages on a single SDC setup,
+there is only one PAPI instance per datacenter. PAPI acts as an HTTP interface to
+Packages data stored in Moray.
+
+
+## ListPackages (GET /packages)
+
+Returns a list of Packages according the specified search filter.
+
+### Inputs
+
+All inputs are optional. Any attribute described into the
+[Package Objects](#Package Objects) section can be used to build a search
+filter.
+
+PAPI provides the flexibility to add any arbitrary attribute to packages,
+without the need to modify application code. These attributes will not be
+indexed and, therefore, shouldn't be used to build search filters.
+
+Additionally indexed fields can also be added to PAPI by modifying the `schema`
+used by the application through [SAPI](https://mo.joyent.com/docs/sapi/master/).
+
+Note that adding a new indexed field will not backfill existing package records,
+and this operation should be done manually.
+
+Please, refer to each setup `/opt/smartdc/papi/etc/config.json` file in order
+to verify the fields being indexed and, therefore, usable for searches.
+
+### Search filters
+
+PAPI takes advantage of Moray facility to use [LDAP Search Filters](http://ldapjs.org/filters.html)
+for object searches. If you specify any of the aforementioned input attributes
+like:
+
+    GET /packages?owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785
+    GET /packages?name=sdc_128
+    GET /packages?owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785&name=sdc_128
+
+these will be used to build an [LDAP Equality Filter](http://ldapjs.org/filters.html#equalityfilter):
+
+    (&(owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785))
+    (&(name=sdc_128))
+    (&(name=sdc_128)(owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785))
+
+You can also use any of the other LDAP search filters by specifying the query
+string argument `filter`. On such case, any of the aforementioned attributes
+will be ignored, and whatever you specify as the value of `filter` will be used
+to perform the search.
+
+For example, if you want to search for all the packages with a RAM greater than
+or equal to 1 GiB, where `fss` attribute is present, and with a name including
+`sdc_`, your filter would be like:
+
+    (&(name=sdc_*)(fss=*)(max_physical_memory>=1024))
+
+and your request:
+
+    GET /packages?filter=(%26(name=sdc_*)(fss=*)(max_physical_memory>=1024))
+
+Note how the '&' character is escaped as '%26' since the query must be URL encoded.
+
+
+### Collection Size Control Inputs
+
+ListPackages also allows controlling the size of the resulting collection with the
+use of the sort, limit and offset parameters. These three parameters can be used
+on either the regular or the LDAP filter version of the ListPackages endpoint.
+
+||**Param**||**Type**||**Description**||
+||sort||String||Sort by any of the ListPackages attribute (except traits and networks).||
+||order||String||Order direction. Either `ASC` or `DESC`||
+||limit||Number||Return only the given number of Packages||
+||offset||Number||Limit the collection starting at the given offset||
+
+Note that every ListPackages request will return an `x-resource-count` HTTP
+header with a value equal to the total number of Packages matching the given
+search options, (or all the packages).
+
+### Responses
+
+||**Code**||**Description**||**Response**||
+||200||||Array of Package objects||
+
+
+## GetPackage (GET /packages/:uuid)
+
+Returns a package with the specified UUID.
+
+### Inputs
+
+||**Param**||**Type**||**Description**||**Required?**||
+||uuid||UUID||Package UUID||Yes||
+||owner_uuid||UUID||Package Owner||No||
+
+### Responses
+
+||**Code**||**Description**||**Response**||
+||200||||Package object||
+||404||Package not found||Error object||
+
+### Example
+
+    GET /packages/00956725-4689-4e2c-9d25-f2172f496f9c
+
+
+## CreatePackage (POST /packages)
+
+Creates a new package.
+
+### Required Inputs
+
+All the attributes set as `required` into the `etc/config.json` schema. Actually:
+
+        "active",
+        "cpu_cap",
+        "default",
+        "group",
+        "description",
+        "max_lwps",
+        "max_physical_memory",
+        "max_swap",
+        "name",
+        "common_name",
+        "quota", 
+        "version", 
+        "zfs_io_priority"
+
+### Optional inputs
+
+Remaining attributes defined into schema plus any arbitrary attribute meaningful
+for the current setup.
+
+### Inputs validation
+
+There are some attributes whose values must match some restrictions. In order
+to get an updated list of these, you can check the [PAPI validations file](https://mo.joyent.com/papi/blob/master/lib/validations.js).
+
+### Response Codes
+
+||**Code**||**Description**||**Response**||
+||201||New Package created||Package object||
+||409||Missing parameter||Error object||
+||409||Invalid parameter||Error object||
+
+
+## UpdatePackage (PUT /packages/:uuid)
+
+Performs an update operation into package non immutable fields.
+
+### UpdatePackage General Inputs
+
+Any package attribute not included into `etc/config.json` `immutable` setting.
+Actually, the following is the list of immutable fields:
+
+        "uuid",
+        "name",
+        "version",
+        "quota",
+        "max_swap",
+        "max_physical_memory",
+        "cpu_cap",
+        "max_lwps",
+        "zfs_io_priority",
+        "vcpus"
+
+
+### UpdatePackage Response Codes
+
+||**Code**||**Description**||**Response**||
+||200||Package updated||Package object||
+||404||Package not found||Error object||
+||409||Missing parameter||Error object||
+||409||Invalid parameter||Error object||
+||409||Attempt to modify immutable attribute||Error object||
+
+
+## DeletePackage (DELETE /package/:uuid)
+
+Packages cannot be destroyed.
+
+### Inputs
+
+||**Param**||**Type**||**Description**||**Required?**||
+||uuid||UUID||Package UUID||Yes||
+
+### Responses
+
+||**Code**||**Description**||**Response**||
+||404||Package not found||Error object||
+||405||Package cannot be deleted||Error object||
+
+
+# Ping (GET /ping)
+
+    GET /ping
+
+When everythig is OK it should return something like:
+
+    {
+      "pid":1004,
+      "backend":"up"
+    }
+
+If backend connection or ping attempt isn't OK, it'll return `down` together
+with the backend error message:
+
+    {
+      "pid":1037,
+      "backend":"down",
+      "backend_error":"no connection"
+    }
+
+# Changelog
+
+## 2013-06-15
+
+- First PAPI version
+

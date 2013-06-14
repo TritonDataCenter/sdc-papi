@@ -36,16 +36,14 @@ review.
 
     make test
 
-If you project has setup steps necessary for testing, then describe those
-here.
+or, if you prefer some extra STDOUT info, go for the long version:
+
+    ./build/node/bin/node test/api.test.js
 
 
 # PENDING
 
 - Import packages from LDAP
-
 - Figure out how to add a new zone with SAPI
-
 - CMD line tool "sdc-packages"
 - node-sdc-clients PAPI client.
-- Docs.
