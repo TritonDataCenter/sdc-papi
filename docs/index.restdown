@@ -71,6 +71,7 @@ an example of a package:
 ||overprovision_io||Optional||Overprovision IO, 1=don't overprovision, 2=overprovision||
 
 
+
 ## Immutable Attributes and Package Persistence
 
 Additionally, the following package attributes are considered _immutable_:
@@ -99,7 +100,9 @@ a package will result into a `405` HTTP response.
 Once a package has been used as the base specification to create a machine, it
 must be available as source of information for billing systems forever.
 
-# Packages
+
+
+# Packages
 
 The Packages endpoint let us get information about Packages on a single SDC setup,
 there is only one PAPI instance per datacenter. PAPI acts as an HTTP interface to
@@ -109,6 +112,7 @@ Packages data stored in Moray.
 ## ListPackages (GET /packages)
 
 Returns a list of Packages according the specified search filter.
+
 
 ### Inputs
 
@@ -129,7 +133,8 @@ and this operation should be done manually.
 Please, refer to each setup `/opt/smartdc/papi/etc/config.json` file in order
 to verify the fields being indexed and, therefore, usable for searches.
 
-### Search filters
+
+### Search filters
 
 PAPI takes advantage of Moray facility to use [LDAP Search Filters](http://ldapjs.org/filters.html)
 for object searches. If you specify any of the aforementioned input attributes
@@ -179,6 +184,7 @@ Note that every ListPackages request will return an `x-resource-count` HTTP
 header with a value equal to the total number of Packages matching the given
 search options, (or all the packages).
 
+
 ### Responses
 
 ||**Code**||**Description**||**Response**||
@@ -189,11 +195,13 @@ search options, (or all the packages).
 
 Returns a package with the specified UUID.
 
+
 ### Inputs
 
 ||**Param**||**Type**||**Description**||**Required?**||
 ||uuid||UUID||Package UUID||Yes||
 ||owner_uuid||UUID||Package Owner||No||
+
 
 ### Responses
 
@@ -201,14 +209,17 @@ Returns a package with the specified UUID.
 ||200||||Package object||
 ||404||Package not found||Error object||
 
+
 ### Example
 
     GET /packages/00956725-4689-4e2c-9d25-f2172f496f9c
 
 
+
 ## CreatePackage (POST /packages)
 
 Creates a new package.
+
 
 ### Required Inputs
 
@@ -228,15 +239,18 @@ All the attributes set as `required` into the `etc/config.json` schema. Actually
         "version", 
         "zfs_io_priority"
 
+
 ### Optional inputs
 
 Remaining attributes defined into schema plus any arbitrary attribute meaningful
 for the current setup.
 
-### Inputs validation
+
+### Inputs validation
 
 There are some attributes whose values must match some restrictions. In order
 to get an updated list of these, you can check the [PAPI validations file](https://mo.joyent.com/papi/blob/master/lib/validations.js).
+
 
 ### Response Codes
 
@@ -249,6 +263,7 @@ to get an updated list of these, you can check the [PAPI validations file](https
 ## UpdatePackage (PUT /packages/:uuid)
 
 Performs an update operation into package non immutable fields.
+
 
 ### UpdatePackage General Inputs
 
@@ -281,10 +296,12 @@ Actually, the following is the list of immutable fields:
 
 Packages cannot be destroyed.
 
+
 ### Inputs
 
 ||**Param**||**Type**||**Description**||**Required?**||
 ||uuid||UUID||Package UUID||Yes||
+
 
 ### Responses
 
@@ -313,7 +330,9 @@ with the backend error message:
       "backend_error":"no connection"
     }
 
+
 # Changelog
+
 
 ## 2013-06-15
 
