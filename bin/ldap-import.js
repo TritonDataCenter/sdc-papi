@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * Copyright (c) 2013, Joyent, Inc. All rights reserved.
  *
@@ -12,10 +13,18 @@ var util = require('util');
 var restify = require('restify');
 var Logger = require('bunyan');
 var ldap = require('ldapjs');
+var vasync = require('vasync');
 
-// ./bin/ldap-import.js --url ldaps://ufds.coal.joyent.us --binddn 'cn=root' --password 'secret'
+var Backend = require('../lib/backend');
+var tools = require('../lib/tools');
 
-///--- Globals
+// ./bin/ldap-import.js --url ldaps://ufds.coal.joyent.us \
+// --binddn 'cn=root' --password 'secret'
+
+// If binder is running, ufds.coal.joyent.us addresses can be set using:
+//      dig +short @10.99.99.11 ufds.coal.joyent.us A
+
+// --- Globals
 
 nopt.typeDefs.DN = {
     type: ldap.DN,
@@ -42,6 +51,7 @@ var shortOpts = {
     'u': ['--url']
 };
 
+var DEFAULT_CFG = path.normalize(__dirname + '/../etc/config.json');
 
 var logLevel = 'info';
 
@@ -135,36 +145,92 @@ client.on('timeout', function () {
     process.exit(1);
 });
 
-client.bind(parsed.binddn, parsed.password, function (err, res) {
+var Packages = [];
+var attrs2ignore = ['dn', 'objectclass', 'controls'];
+var attrs2numerify = ['max_physical_memory', 'max_swap',
+    'vcpus', 'cpu_cap', 'max_lwps', 'quota', 'zfs_io_priority',
+    'fss', 'cpu_burst_ratio', 'ram_ratio', 'overprovision_cpu',
+    'overprovision_memory', 'overprovision_storage', 'overprovision_network',
+    'overprovision_io'];
+var booleans = ['active', 'default'];
+
+
+function importPackages() {
+    var cfg = tools.configure(DEFAULT_CFG, {}, log);
+    cfg.log = log;
+    var backend = Backend(cfg);
+    backend.init(function () {
+        var done = 0;
+        Packages.forEach(function (p) {
+            backend.createPkg(p, function (err) {
+                if (err) {
+                    process.stdout.write(util.format(
+                            'Error importing package %s: %s\n', p.uuid, err));
+                } else {
+                    process.stdout.write(util.format(
+                            'Package %s created successfully\n', p.uuid));
+                }
+                done += 1;
+            });
+        });
+
+        function checkDone() {
+            if (done === Packages.length) {
+                process.exit(1);
+            } else {
+                setTimeout(checkDone, 200);
+            }
+        }
+        checkDone();
+    });
+}
+
+client.bind(parsed.binddn, parsed.password, function (err, r) {
     if (err) {
         perror(err);
     }
 
     var req = {
         scope: 'sub',
-        filter: '(&(objectclass=sdcpackage))',
-        attributes: []
+        filter: '(&(objectclass=sdcpackage))'
     };
 
-    client.search('o=smartdc', req, function (err, res) {
-        if (err) {
-            perror(err);
+    client.search('o=smartdc', req, function (er, res) {
+        if (er) {
+            perror(er);
         }
 
         res.on('searchEntry', function (entry) {
-            process.stdout.write(util.inspect(entry.object, false, 8, true));
+            // We have some LDAP attributes we're not interested into:
+            var obj = entry.object;
+            attrs2ignore.forEach(function (a) {
+                delete obj[a];
+            });
+            attrs2numerify.forEach(function (a) {
+                if (obj[a]) {
+                    obj[a] = Number(obj[a]);
+                }
+            });
+            booleans.forEach(function (a) {
+                if (obj[a] === 'true') {
+                    obj[a] = true;
+                } else {
+                    obj[a] = false;
+                }
+            });
+            Packages.push(obj);
         });
-    
-        res.on('error', function (err) {
-            perror(err);
+
+        res.on('error', function (err2) {
+            perror(err2);
         });
-    
-        res.on('end', function (res) {
-            if (res.status !== 0) {
-                process.stderr.write(ldap.getMessage(res.status) + '\n');
+
+        res.on('end', function (res2) {
+            if (res2.status !== 0) {
+                process.stderr.write(ldap.getMessage(res2.status) + '\n');
             }
             client.unbind(function () {
-                return;
+                return importPackages();
             });
         });
     });
