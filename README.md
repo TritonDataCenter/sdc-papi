@@ -12,7 +12,6 @@ Tickets/bugs: <https://devhub.joyent.com/jira/browse/PAPI>
 This is the repo for SDC 7 Packages API, an HTTP interface to
 SDC Packages. See [docs](https://mo.joyent.com/docs/papi) for the details
 
-Start with the guidelines: <https://mo.joyent.com/docs/papi>
 
 # Development
 
@@ -29,8 +28,6 @@ to update "docs/index.html".
 
 Before commiting/pushing run `make prepush` and, if possible, get a code
 review.
-
-
 
 # Testing
 

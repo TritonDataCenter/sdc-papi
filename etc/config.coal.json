@@ -11,6 +11,21 @@
         "noCache": true
     },
     "ufds_admin_uuid": "930896af-bf8c-48d4-885c-6573a94b1853",
+    "first_boot": true,
+    "ufds": {
+        "url": "ldaps://10.99.99.18",
+        "bindDN": "cn=root",
+        "bindPassword": "secret",
+        "cache": {
+            "size": 5000,
+            "expiry": 60
+        },
+        "clientTimeout": 240000,
+        "maxConnections": 1
+    },
+    "sapi": {
+        "url": "http://10.99.99.34"
+    },
     "bucket": "sdc_packages",
     "warning": "Please, keep 'is_default' and 'group_name' into schema. Translation happening within the App, given 'default' and 'group' cannot be used as PostgreSQL indexes.",
     "schema": {
@@ -54,13 +69,10 @@
         "active",
         "cpu_cap",
         "default",
-        "group",
-        "description",
         "max_lwps",
         "max_physical_memory",
         "max_swap",
         "name",
-        "common_name",
         "quota", 
         "version", 
         "zfs_io_priority", 
