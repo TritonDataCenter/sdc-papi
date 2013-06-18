@@ -6,7 +6,7 @@
  * Utility to import sdcPackages from UFDS LDAP into sdc_packages bucket.
  */
 
-// ./bin/ldap-import.js --url ldaps://ufds.coal.joyent.us \
+// ./bin/ldap-import --url ldaps://ufds.coal.joyent.us \
 // --binddn 'cn=root' --password 'secret'
 
 // If binder is running, ufds.coal.joyent.us addresses can be set using:
