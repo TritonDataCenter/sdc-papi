@@ -1,9 +1,16 @@
 #!/usr/bin/env node
+// vim: set filetype=javascript :
 /*
  * Copyright (c) 2013, Joyent, Inc. All rights reserved.
  *
  * Utility to import sdcPackages from UFDS LDAP into sdc_packages bucket.
  */
+
+// ./bin/ldap-import.js --url ldaps://ufds.coal.joyent.us \
+// --binddn 'cn=root' --password 'secret'
+
+// If binder is running, ufds.coal.joyent.us addresses can be set using:
+//      dig +short @10.99.99.11 ufds.coal.joyent.us A
 
 var nopt = require('nopt');
 var url = require('url');
@@ -17,12 +24,7 @@ var vasync = require('vasync');
 
 var Backend = require('../lib/backend');
 var tools = require('../lib/tools');
-
-// ./bin/ldap-import.js --url ldaps://ufds.coal.joyent.us \
-// --binddn 'cn=root' --password 'secret'
-
-// If binder is running, ufds.coal.joyent.us addresses can be set using:
-//      dig +short @10.99.99.11 ufds.coal.joyent.us A
+var shared = require('../lib/shared');
 
 // --- Globals
 
@@ -129,22 +131,6 @@ var log = new Logger({
     level: logLevel
 });
 
-
-var client = ldap.createClient({
-    url: parsed.url,
-    log: log,
-    timeout: parsed.timeout || false
-});
-
-client.on('error', function (err) {
-    perror(err);
-});
-
-client.on('timeout', function () {
-    process.stderr.write('Timeout reached\n');
-    process.exit(1);
-});
-
 var Packages = [];
 var attrs2ignore = ['dn', 'objectclass', 'controls'];
 var attrs2numerify = ['max_physical_memory', 'max_swap',
@@ -154,84 +140,150 @@ var attrs2numerify = ['max_physical_memory', 'max_swap',
     'overprovision_io'];
 var booleans = ['active', 'default'];
 
+// Load all the sdcPackages from UFDS and return an array of objects:
+// cb(err, packages)
+function loadUFDFSPackages(cb) {
+    var packages = [];
 
-function importPackages() {
-    var cfg = tools.configure(DEFAULT_CFG, {}, log);
-    cfg.log = log;
-    var backend = Backend(cfg);
-    backend.init(function () {
-        var done = 0;
-        Packages.forEach(function (p) {
-            backend.createPkg(p, function (err) {
-                if (err) {
-                    process.stdout.write(util.format(
-                            'Error importing package %s: %s\n', p.uuid, err));
-                } else {
-                    process.stdout.write(util.format(
-                            'Package %s created successfully\n', p.uuid));
+    var client = ldap.createClient({
+        url: parsed.url,
+        log: log,
+        timeout: parsed.timeout || false
+    });
+
+    client.once('error', function (err) {
+        return cb(err);
+    });
+
+    client.once('timeout', function () {
+        return cb('Timeout reached\n');
+    });
+
+    return client.bind(parsed.binddn, parsed.password, function (err, r) {
+        if (err) {
+            return cb(err);
+        }
+
+        var req = {
+            scope: 'sub',
+            filter: '(&(objectclass=sdcpackage))'
+        };
+
+        return client.search('o=smartdc', req, function (er, res) {
+            if (er) {
+                return cb(er);
+            }
+
+            res.on('searchEntry', function (entry) {
+                // We have some LDAP attributes we're not interested into:
+                var obj = entry.object;
+                attrs2ignore.forEach(function (a) {
+                    delete obj[a];
+                });
+                attrs2numerify.forEach(function (a) {
+                    if (obj[a]) {
+                        obj[a] = Number(obj[a]);
+                    }
+                });
+                booleans.forEach(function (a) {
+                    if (obj[a] === 'true') {
+                        obj[a] = true;
+                    } else {
+                        obj[a] = false;
+                    }
+                });
+                if (obj.networks) {
+                    try {
+                        obj.networks = JSON.parse(obj.networks);
+                    } catch (e) {
+                        obj.networks = [];
+                    }
                 }
-                done += 1;
+                if (obj.traits) {
+                    try {
+                        obj.traits = JSON.parse(obj.traits);
+                    } catch (e1) {
+                        obj.traits = {};
+                    }
+                }
+                packages.push(obj);
+            });
+
+            res.once('error', function (err2) {
+                return cb(err2);
+            });
+
+            return res.once('end', function (res2) {
+                if (res2.status !== 0) {
+                    return cb(ldap.getMessage(res2.status));
+                }
+                return client.unbind(function () {
+                    return cb(null, packages);
+                });
             });
         });
-
-        function checkDone() {
-            if (done === Packages.length) {
-                process.exit(1);
-            } else {
-                setTimeout(checkDone, 200);
-            }
-        }
-        checkDone();
     });
 }
 
-client.bind(parsed.binddn, parsed.password, function (err, r) {
-    if (err) {
-        perror(err);
-    }
-
-    var req = {
-        scope: 'sub',
-        filter: '(&(objectclass=sdcpackage))'
-    };
-
-    client.search('o=smartdc', req, function (er, res) {
-        if (er) {
-            perror(er);
+function main() {
+    loadUFDFSPackages(function (err1, packages) {
+        if (err1) {
+            return perror(err1);
         }
 
-        res.on('searchEntry', function (entry) {
-            // We have some LDAP attributes we're not interested into:
-            var obj = entry.object;
-            attrs2ignore.forEach(function (a) {
-                delete obj[a];
-            });
-            attrs2numerify.forEach(function (a) {
-                if (obj[a]) {
-                    obj[a] = Number(obj[a]);
-                }
-            });
-            booleans.forEach(function (a) {
-                if (obj[a] === 'true') {
-                    obj[a] = true;
-                } else {
-                    obj[a] = false;
-                }
-            });
-            Packages.push(obj);
-        });
+        log.info('%d packages successfully loaded from UFDS', packages.length);
 
-        res.on('error', function (err2) {
-            perror(err2);
-        });
+        var cfg = tools.configure(DEFAULT_CFG, {}, log.child({
+            component: 'papi'
+        }));
 
-        res.on('end', function (res2) {
-            if (res2.status !== 0) {
-                process.stderr.write(ldap.getMessage(res2.status) + '\n');
+        var bucket = cfg.bucket;
+
+        return shared.morayClient(cfg, function (err2, client) {
+            if (err2) {
+                return perror(err2);
             }
-            client.unbind(function () {
-                return importPackages();
+
+            return shared.loadPackages(client, bucket, function (err3, uuids) {
+                if (err3) {
+                    return perror(err3);
+                }
+                log.info('%d packages already in moray', uuids.length);
+
+                var done = 0;
+
+                function checkDone() {
+                    if (done === packages.length) {
+                        process.exit(0);
+                    } else {
+                        setTimeout(checkDone, 200);
+                    }
+                }
+
+                packages.forEach(function (p) {
+                    if (uuids.indexOf(p.uuid) === -1) {
+                        shared.savePackage(client, p, bucket, function (err4) {
+                            if (err4) {
+                                log.error({
+                                    err: err4
+                                }, 'Error importing pacakge');
+                            } else {
+                                log.info({
+                                    'package': p
+                                }, 'Package imported successfully');
+                            }
+                            done += 1;
+                        });
+                    } else {
+                        log.info('Package %s already exists, skipping', p.uuid);
+                        done += 1;
+                    }
+                });
+
+                return checkDone();
             });
         });
     });
-});
+}
+
+main();
