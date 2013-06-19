@@ -11,6 +11,9 @@
 
 // If binder is running, ufds.coal.joyent.us addresses can be set using:
 //      dig +short @10.99.99.11 ufds.coal.joyent.us A
+//
+//  ./bin/ldap-import --url ldaps://10.99.99.18 --binddn \
+//      'cn=root' --password 'secret' --debug 1 2>&1 |bunyan
 
 var nopt = require('nopt');
 var url = require('url');
@@ -22,7 +25,6 @@ var Logger = require('bunyan');
 var ldap = require('ldapjs');
 var vasync = require('vasync');
 
-var Backend = require('../lib/backend');
 var tools = require('../lib/tools');
 var shared = require('../lib/shared');
 
