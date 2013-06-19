@@ -1,0 +1,280 @@
+#!/usr/bin/env node
+// vim: set filetype=javascript :
+/*
+ * Copyright (c) 2013, Joyent, Inc. All rights reserved.
+ *
+ * Bulk importing data into moray's PAPI tables
+ */
+
+var bunyan = require('bunyan');
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
+
+var nopt = require('nopt');
+var vasync = require('vasync');
+
+var tools = require('../lib/tools');
+var shared = require('../lib/shared');
+
+var DIRECTORY;
+var DRY_RUN = false;
+var FILES;
+var PAPI;
+var OLD_PACKAGES = [];
+var DEFAULT_CFG = path.normalize(__dirname + '/../etc/config.json');
+var MORAY;
+
+var attrs2ignore = ['dn', 'objectclass', 'controls'];
+var attrs2numerify = ['max_physical_memory', 'max_swap',
+    'vcpus', 'cpu_cap', 'max_lwps', 'quota', 'zfs_io_priority',
+    'fss', 'cpu_burst_ratio', 'ram_ratio', 'overprovision_cpu',
+    'overprovision_memory', 'overprovision_storage', 'overprovision_network',
+    'overprovision_io'];
+var booleans = ['active', 'default'];
+
+
+var log = new bunyan({
+    name: 'papi',
+    component: 'moray-importer',
+    stream: process.stderr,
+    level: 'info'
+});
+
+var CONFIG = tools.configure(DEFAULT_CFG, {}, log);
+var bucket = CONFIG.bucket;
+
+// --- Utilities
+
+function enter(str) {
+    console.log('');
+    console.log('== %s', str);
+    console.log('');
+}
+
+
+function readAllLines(file, callback) {
+    return fs.readFile(file, 'utf8', function (err, data) {
+        if (err) {
+            return callback(err);
+        }
+
+        return callback(null, data.split('\n'));
+    });
+}
+
+
+function readLines(file, dataCallback, doneCallback) {
+    var leftover = '';
+    var rs = fs.createReadStream(file, { flags: 'r', encoding: 'utf8' });
+
+    rs.on('data', function (data) {
+        var pieces = (leftover + data.toString()).split(/\n/g);
+        leftover = pieces.pop();
+
+        return dataCallback(pieces);
+    });
+
+    rs.on('end', function () {
+        if (leftover.length !== 0) {
+            dataCallback(leftover);
+        }
+        return doneCallback();
+    });
+}
+
+
+function usage(msg, code) {
+    if (typeof (msg) === 'string') {
+        console.error(msg);
+    }
+
+    console.error('%s <directory>', path.basename(process.argv[1]));
+    process.exit(code || 0);
+}
+
+
+function process_argv() {
+    var dir;
+    var longOpts = {
+        'dryrun': Boolean
+    };
+    var parsed = nopt(longOpts);
+
+    if (parsed.dryrun) {
+        DRY_RUN = true;
+        console.log('dry run: not modifying any data');
+    }
+
+    if (parsed.argv.remain.length < 1) {
+        usage(null, 1);
+    }
+    dir = parsed.argv.remain[0];
+
+    try {
+        var stats = fs.statSync(dir);
+        if (!stats.isDirectory()) {
+            usage(dir + ' is not a directory', 1);
+        }
+    } catch (e) {
+        usage(dir + ' is invalid: ' + e.message, 1);
+    }
+
+    DIRECTORY = dir;
+}
+
+
+// --- Main functions
+
+function getFiles(_, callback) {
+    fs.readdir(DIRECTORY, function (err, res) {
+        if (err) {
+            usage(err.message, 1);
+        }
+
+        FILES = res;
+        callback();
+    });
+}
+
+
+function initMoray(_, callback) {
+    shared.morayClient(CONFIG, function (err, client) {
+        if (err) {
+            return callback(err);
+        }
+        MORAY = client;
+        return callback();
+    });
+}
+
+function getPackages(_, callback) {
+    enter('getting existing packages');
+    shared.loadPackages(MORAY, bucket, function (err, uuids) {
+        if (err) {
+            return callback(err);
+        }
+        log.info('%d packages already in moray', uuids.length);
+        OLD_PACKAGES = uuids;
+        return callback();
+    });
+}
+
+
+
+
+function createPackages(_, callback) {
+    enter('creating packages');
+    var f = DIRECTORY + '/papi_packages.moray';
+    return readAllLines(f, function (err, lines) {
+        if (err) {
+            return callback(err);
+        }
+
+        return vasync.forEachParallel({
+            inputs: lines,
+            func: function _create(line, cb) {
+                if (line === '') {
+                    return cb();
+                }
+                var json;
+
+                try {
+                    json = JSON.parse(line);
+                } catch (err2) {
+                    return cb(err2);
+                }
+
+                if (OLD_PACKAGES.indexOf(json.uuid) !== -1) {
+                    console.log(
+                        'package "%s" already exists, ' +
+                        'not creating', json.uuid,
+                        JSON.stringify(json, null, 2));
+                    return cb();
+                }
+
+                attrs2ignore.forEach(function (a) {
+                    delete json[a];
+                });
+                attrs2numerify.forEach(function (a) {
+                    if (json[a]) {
+                        json[a] = Number(json[a]);
+                    }
+                });
+                booleans.forEach(function (a) {
+                    if (json[a] === 'true') {
+                        json[a] = true;
+                    } else {
+                        json[a] = false;
+                    }
+                });
+                if (json.networks && typeof (json.networks) === 'string') {
+                    try {
+                        json.networks = JSON.parse(json.networks);
+                    } catch (e) {
+                        json.networks = [];
+                    }
+                }
+                if (json.traits && typeof (json.traits) === 'string') {
+                    try {
+                        json.traits = JSON.parse(json.traits);
+                    } catch (e1) {
+                        json.traits = {};
+                    }
+                }
+
+                if (DRY_RUN) {
+                    console.log('created package %s: %s', json.name,
+                        JSON.stringify(json, null, 2));
+                    return cb();
+                }
+
+                return shared.savePackage(MORAY, json, bucket, function (er2) {
+                    if (er2) {
+                        return cb(er2);
+                    }
+                    console.log('created package %s: %s', json.name,
+                            JSON.stringify(json, null, 2));
+                    return cb();
+                });
+            }
+        }, callback);
+    });
+}
+
+
+function main() {
+    process_argv();
+
+    vasync.pipeline({
+        funcs: [
+            getFiles,
+            initMoray,
+            getPackages,
+            createPackages
+        ]
+    }, function (err) {
+        enter('done');
+
+        if (err) {
+            console.error(err.message);
+            if (err.hasOwnProperty('ase_errors')) {
+                err.ase_errors.forEach(function (e) {
+                    if (e.hasOwnProperty('body')) {
+                        console.error(JSON.stringify(e.body, null, 2));
+                    } else {
+                        console.error(e.message);
+                    }
+                });
+            }
+        }
+
+        if (err) {
+            process.exit(1);
+        } else {
+            process.exit(0);
+        }
+    });
+}
+
+main();

@@ -23,7 +23,7 @@ TAP		:= ./node_modules/.bin/tap
 # Files
 #
 DOC_FILES	 = index.restdown
-JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
+JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js') bin/ldap-import sbin/import-data
 JSON_FILES	 = package.json
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
@@ -81,6 +81,7 @@ release: check all docs
 		$(ROOT)/bin \
 		$(ROOT)/etc \
 		$(ROOT)/lib \
+		$(ROOT)/sbin \
 		$(ROOT)/server.js \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
