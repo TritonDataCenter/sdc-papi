@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/opt/smartdc/papi/build/node/bin/node
 // vim: set filetype=javascript :
 /*
  * Copyright (c) 2013, Joyent, Inc. All rights reserved.
@@ -154,7 +154,7 @@ function getPackages(_, callback) {
         if (err) {
             return callback(err);
         }
-        log.info('%d packages already in moray', uuids.length);
+        console.log('%d packages already in moray', uuids.length);
         OLD_PACKAGES = uuids;
         return callback();
     });
