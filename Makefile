@@ -85,6 +85,7 @@ release: check all docs
 		$(ROOT)/server.js \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
+		$(ROOT)/sapi_manifests \
 		$(ROOT)/smf \
 		$(ROOT)/test \
 		$(TMPDIR)/root/opt/smartdc/papi/
