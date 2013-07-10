@@ -31,16 +31,28 @@ review.
 
 # Testing
 
+Before run tests, you should consider point config file to a different DB
+than `moray`. There is a script at `tools/coal-test-env.sh` which will create
+a `moray_test` DB for you and run an additional `moray-test` instance listening
+at port `2222`. Just scping into GZ and executing it should work.
+
+Then, make sure your test file points to the right port.
+
+Then, to run the tests either:
+
     make test
 
 or, if you prefer some extra STDOUT info, go for the long version:
 
-    ./build/node/bin/node test/api.test.js
+    ./build/node/bin/node test/api.test.js 2>&1 | bunyan
 
 
 # PENDING
 
-- Import packages from LDAP
-- Figure out how to add a new zone with SAPI
-- CMD line tool "sdc-packages"
-- node-sdc-clients PAPI client.
+- Add PAPI zone to existing setups (JPC)
+- Update CloudAPI, AdminUI and workflows (VMAPI) to use PAPI instead of UFDS
+  sdcPackages. Note this means that both, CloudAPI and AdminUI can remove the
+  local, non master UFDS from their config files.
+- NOTE SOME DOWNTIME IS REQUIRED IN ORDER TO COMPLETE THE FOLLOWING STEPS:
+  - Run `./bin/ldap-import` into the aforementioned setups.
+  - Deploy the new zones using PAPI instead of UFDS sdcPackages.
