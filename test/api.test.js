@@ -121,6 +121,9 @@ test('POST /packages (OK)', function (t) {
         t.equal(pkg.networks.length, 2);
         t.equivalent(pkg.traits.arr, ['one', 'two', 'three']);
         t.equal(pkg.traits.str, 'a string');
+        t.ok(pkg.created_at);
+        t.ok(pkg.updated_at);
+        t.equal('string', typeof(pkg.created_at));
         PACKAGE = pkg;
         t.end();
     });
@@ -206,6 +209,8 @@ test('GET /packages/:uuid (OK)', function (t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
+        t.equal(pkg.created_at, PACKAGE.created_at);
+        t.equal(pkg.updated_at, PACKAGE.updated_at);
         t.equal(pkg.urn, PACKAGE.urn);
         t.end();
     });
@@ -287,7 +292,6 @@ test('GET /packages (Custom filter)', function (t) {
         t.equal(res.statusCode, 200, 'status code (200 OK)');
         t.ok(res.headers['x-resource-count'], 'x-resource-count');
         t.ok(Array.isArray(obj), 'Packages list');
-        console.log(util.inspect(obj, false, 8, true));
         t.ok(obj.length);
         t.end();
     });
@@ -363,6 +367,10 @@ test('PUT /packages/:uuid (OK)', function (t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
+        t.ok(pkg.updated_at);
+        t.equal('string', typeof(pkg.updated_at));
+        t.equal(pkg.created_at, PACKAGE.created_at);
+        t.notEqual(pkg.updated_at, PACKAGE.updated_at);
         t.equal(pkg.owner_uuid, config.ufds_admin_uuid);
         t.end();
     });

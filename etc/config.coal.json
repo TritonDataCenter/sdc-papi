@@ -141,6 +141,14 @@
         "overprovision_io": {
             "type": "number",
             "index": true
+        },
+        "created_at": {
+            "type": "number",
+            "index": true
+        },
+        "updated_at": {
+            "type": "number",
+            "index": true
         }
     },
 
