@@ -8,7 +8,8 @@
             "retries": 3,
             "minTimeout": 1000
         },
-        "noCache": true
+        "noCache": true,
+        "version": 1
     },
     "ufds_admin_uuid": "930896af-bf8c-48d4-885c-6573a94b1853",
     "first_boot": true,
@@ -37,32 +38,110 @@
             "type": "string",
             "unique": true
         },
-        "name": { "type": "string" },
-        "owner_uuid": { "type": "string" },
-        "active": { "type": "boolean" },
-        "vcpus": { "type": "number" },
-        "cpu_cap": { "type": "number" },
-        "is_default": { "type": "boolean" },
-        "group_name": { "type": "string" },
-        "description": { "type": "string" },
-        "max_lwps": { "type": "number" },
-        "max_physical_memory": { "type": "number" },
-        "max_swap": { "type": "number" },
-        "common_name": { "type": "string" },
-        "quota": { "type": "number" },
-        "networks": { "type": "string" },
-        "version": { "type": "string" },
-        "parent": { "type": "string" },
-        "traits": { "type": "string" },
-        "zfs_io_priority": { "type": "number" },
-        "fss": { "type": "number" },
-        "cpu_burst_ratio": { "type": "number" },
-        "ram_ratio": { "type": "number" },
-        "overprovision_cpu": { "type": "number" },
-        "overprovision_memory": { "type": "number" },
-        "overprovision_storage": { "type": "number" },
-        "overprovision_network": { "type": "number" },
-        "overprovision_io": { "type": "number" }
+        "name": {
+            "type": "string",
+            "index": true
+        },
+        "owner_uuid": {
+            "type": "string",
+            "index": true
+        },
+        "active": {
+            "type": "boolean",
+            "index": true
+        },
+        "vcpus": {
+            "type": "number",
+            "index": true
+        },
+        "cpu_cap": {
+            "type": "number",
+            "index": true
+        },
+        "is_default": {
+            "type": "boolean",
+            "index": true
+        },
+        "group_name": {
+            "type": "string",
+            "index": true
+        },
+        "description": {
+            "type": "string",
+            "index": true
+        },
+        "max_lwps": {
+            "type": "number",
+            "index": true
+        },
+        "max_physical_memory": {
+            "type": "number",
+            "index": true
+        },
+        "max_swap": {
+            "type": "number",
+            "index": true
+        },
+        "common_name": {
+            "type": "string",
+            "index": true
+        },
+        "quota": {
+            "type": "number",
+            "index": true
+        },
+        "networks": {
+            "type": "object",
+            "index": false
+        },
+        "version": {
+            "type": "string",
+            "index": true
+        },
+        "parent": {
+            "type": "string",
+            "index": true
+        },
+        "traits": {
+            "type": "object",
+            "index": false
+        },
+        "zfs_io_priority": {
+            "type": "number",
+            "index": true
+        },
+        "fss": {
+            "type": "number",
+            "index": true
+        },
+        "cpu_burst_ratio": {
+            "type": "number",
+            "index": true
+        },
+        "ram_ratio": {
+            "type": "number",
+            "index": true
+        },
+        "overprovision_cpu": {
+            "type": "number",
+            "index": true
+        },
+        "overprovision_memory": {
+            "type": "number",
+            "index": true
+        },
+        "overprovision_storage": {
+            "type": "number",
+            "index": true
+        },
+        "overprovision_network": {
+            "type": "number",
+            "index": true
+        },
+        "overprovision_io": {
+            "type": "number",
+            "index": true
+        }
     },
 
     "required": [
