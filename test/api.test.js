@@ -123,7 +123,7 @@ test('POST /packages (OK)', function (t) {
         t.equal(pkg.traits.str, 'a string');
         t.ok(pkg.created_at);
         t.ok(pkg.updated_at);
-        t.equal('string', typeof(pkg.created_at));
+        t.equal('string', typeof (pkg.created_at));
         PACKAGE = pkg;
         t.end();
     });
@@ -368,7 +368,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
         t.equal(res.statusCode, 200);
         t.ok(pkg);
         t.ok(pkg.updated_at);
-        t.equal('string', typeof(pkg.updated_at));
+        t.equal('string', typeof (pkg.updated_at));
         t.equal(pkg.created_at, PACKAGE.created_at);
         t.notEqual(pkg.updated_at, PACKAGE.updated_at);
         t.equal(pkg.owner_uuid, config.ufds_admin_uuid);
