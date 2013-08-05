@@ -208,6 +208,13 @@ function loadUFDFSPackages(cb) {
                         obj.traits = {};
                     }
                 }
+                if (obj.min_platform) {
+                    try {
+                        obj.min_platform = JSON.parse(obj.min_platform);
+                    } catch (e2) {
+                        obj.min_platform = {};
+                    }
+                }
                 packages.push(obj);
             });
 

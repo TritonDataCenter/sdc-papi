@@ -85,6 +85,7 @@ ADMIN_UUID=$(sdc-sapi --no-headers /applications?name=sdc | json -Ha metadata.uf
 cd /var/tmp
 
 IS_IMAGE_IMPORTED=$(sdc-imgadm list -o uuid|grep $NEW_IMAGE)
+
 if [[ -n "$IS_IMAGE_IMPORTED" ]]; then
   echo "Image is already imported, moving into next step"
 else
@@ -156,10 +157,9 @@ if [[ -n "$INSTANCE_ID" ]]; then
   echo "Service $role instance already exists, moving into next step"
 else
   echo "Attempting to create $role instance"
-  INSTANCE_ID=$(sdc-sapi --no-headers /instances -X POST -d "{
-      \"service_uuid\": \"$SERVICE_UUID\",
-      \"params\": { \"alias\" : \"papi0\" }
-  }")
+  HEADNODE=$(sysinfo|json UUID)
+  INSTANCE_ID=$(sdc-sapi --no-headers /instances -X POST -d \
+    "{\"service_uuid\": \"$SERVICE_UUID\", \"params\": {\"alias\" : \"papi0\", \"server_uuid\": \"$HEADNODE\"}}")
 fi
 
 

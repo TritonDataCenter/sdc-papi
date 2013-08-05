@@ -60,6 +60,7 @@ an example of a package:
 ||common_name||Optional||Name displayed in the Portal||
 ||quota||Mandatory||disk size in MB||
 ||networks||Optional||List of networks to associate with||
+||min_platform||Optional||Object, k/v List of minimal supported OS platforms||
 ||version||Mandatory||semver version number||
 ||parent||Optional, useful only if a package is created for a customer from another package||API name of the instance type this was cloned from||
 ||traits||Optional||set of traits for provisioning, currently limited to ssd:true and storage:true by current server installation||

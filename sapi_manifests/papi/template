@@ -9,7 +9,7 @@
             "minTimeout": 1000
         },
         "noCache": true,
-        "version": 1
+        "version": 2
     },
     "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",
     "first_boot": {{{SERVICE_IS_FIRST_BOOT}}},
@@ -91,6 +91,10 @@
             "index": true
         },
         "networks": {
+            "type": "object",
+            "index": false
+        },
+        "min_platform": {
             "type": "object",
             "index": false
         },

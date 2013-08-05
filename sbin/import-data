@@ -222,7 +222,13 @@ function createPackages(_, callback) {
                         json.traits = {};
                     }
                 }
-
+                if (json.min_platform && typeof (json.min_platform) === 'string') {
+                    try {
+                        json.min_platform = JSON.parse(json.min_platform);
+                    } catch (e2) {
+                        json.min_platform = {};
+                    }
+                }
                 if (DRY_RUN) {
                     console.log('created package %s: %s', json.name,
                         JSON.stringify(json, null, 2));
