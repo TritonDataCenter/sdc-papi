@@ -222,7 +222,8 @@ function createPackages(_, callback) {
                         json.traits = {};
                     }
                 }
-                if (json.min_platform && typeof (json.min_platform) === 'string') {
+                if (json.min_platform &&
+                        typeof (json.min_platform) === 'string') {
                     try {
                         json.min_platform = JSON.parse(json.min_platform);
                     } catch (e2) {
