@@ -9,7 +9,7 @@
             "minTimeout": 1000
         },
         "noCache": true,
-        "version": 2
+        "version": 3
     },
     "ufds_admin_uuid": "930896af-bf8c-48d4-885c-6573a94b1853",
     "first_boot": true,
@@ -152,6 +152,10 @@
         },
         "updated_at": {
             "type": "number",
+            "index": true
+        },
+        "billing_tag": {
+            "type": "string",
             "index": true
         }
     },

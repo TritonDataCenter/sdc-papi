@@ -65,7 +65,8 @@ var entry = {
     uuid: uuid(),
     description: 'This is a package description, and should be present',
     common_name: 'Regular 128MiB',
-    fss: 25
+    fss: 25,
+    billing_tag: 'Regular128MiB'
 };
 
 entry.urn = util.format('sdc:%s:%s:%s', entry.uuid, entry.name, entry.version);
@@ -124,6 +125,7 @@ test('POST /packages (OK)', function (t) {
         t.ok(pkg.created_at);
         t.ok(pkg.updated_at);
         t.equal('string', typeof (pkg.created_at));
+        t.ok(pkg.billing_tag);
         PACKAGE = pkg;
         t.end();
     });
@@ -212,6 +214,7 @@ test('GET /packages/:uuid (OK)', function (t) {
         t.equal(pkg.created_at, PACKAGE.created_at);
         t.equal(pkg.updated_at, PACKAGE.updated_at);
         t.equal(pkg.urn, PACKAGE.urn);
+        t.ok(pkg.billing_tag);
         t.end();
     });
 });
