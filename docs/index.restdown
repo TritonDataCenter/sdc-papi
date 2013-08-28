@@ -68,11 +68,11 @@ an example of a package:
 ||fss||Optional||Typically computed value, formula: OverProvision Ratio == 1 ? CPU_CAP: (Guest DRAM/Host DRAM provisionable) * Host CPUs * 100||
 ||cpu_burst_ratio||Optional||Typically computed value, formula: (CPU_CAP / (OverProvision Ratio * Burst Ratio))/FSS||
 ||ram_ratio||Optional||Typically computed value, formula: RAM GB/((CPU_CAP/100)*Bursting Ratio * OverProvision Ratio)||
-||overprovision_cpu||Optional||Overprovision CPU, 1=don't overprovision, 2=overprovision||
-||overprovision_memory||Optional||Overprovision Memory, 1=don't overprovision, 2=overprovision||
-||overprovision_storage||Optional||Overprovision Storage, 1=don't overprovision, 2=overprovision||
-||overprovision_network||Optional||Overprovision Network, 1=don't overprovision, 2=overprovision||
-||overprovision_io||Optional||Overprovision IO, 1=don't overprovision, 2=overprovision||
+||overprovision_cpu||Optional||Overprovision CPU, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
+||overprovision_memory||Optional||Overprovision Memory, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
+||overprovision_storage||Optional||Overprovision Storage, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
+||overprovision_network||Optional||Overprovision Network, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
+||overprovision_io||Optional||Overprovision IO, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
 
 
 
