@@ -238,7 +238,8 @@ test('GET /packages (Search by owner_uuid)', function (t) {
         t.ok(res.headers['x-resource-count'], 'x-resource-count');
         t.ok(Array.isArray(obj), 'Packages list');
         obj.forEach(function (p) {
-            t.ok(p.uuid !== PACKAGE.uuid);
+            t.ok(typeof (p.owner_uuid) === 'undefined' ||
+                p.owner_uuid === config.ufds_admin_uuid);
         });
         t.end();
     });
@@ -280,7 +281,7 @@ test('GET /packages (Search by multiple fields)', function (t) {
         t.equal(res.statusCode, 200, 'status code (200 OK)');
         t.ok(res.headers['x-resource-count'], 'x-resource-count');
         t.ok(Array.isArray(obj), 'Packages list');
-        t.equal(obj.length, 0);
+        t.equal(obj.length, 1);
         t.end();
     });
 });
