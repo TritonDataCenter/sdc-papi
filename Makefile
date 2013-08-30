@@ -62,7 +62,7 @@ PATH	:= $(NODE_INSTALL)/bin:/opt/local/bin:${PATH}
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(TAP) $(REPO_DEPS)
+all: $(SMF_MANIFESTS) | $(TAP) $(REPO_DEPS) sdc-scripts
 	$(NPM) rebuild
 
 $(TAP): | $(NPM_EXEC)
@@ -89,7 +89,12 @@ release: check all docs
 		$(ROOT)/smf \
 		$(ROOT)/test \
 		$(TMPDIR)/root/opt/smartdc/papi/
-	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts
+	cp $(ROOT)/sdc-boot/*.sh \
+	    $(TMPDIR)/root/opt/smartdc/sdc-boot/
+	mv $(ROOT)/deps/sdc-scripts/*.sh \
+	    $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts/
+	cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(TMPDIR)
 
 
