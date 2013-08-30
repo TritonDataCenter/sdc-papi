@@ -92,7 +92,7 @@ release: check all docs
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts
 	cp $(ROOT)/sdc-boot/*.sh \
 	    $(TMPDIR)/root/opt/smartdc/sdc-boot/
-	mv $(ROOT)/deps/sdc-scripts/*.sh \
+	cp $(ROOT)/deps/sdc-scripts/*.sh \
 	    $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts/
 	cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(TMPDIR)
