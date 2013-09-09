@@ -89,11 +89,9 @@ release: check all docs
 		$(ROOT)/smf \
 		$(ROOT)/test \
 		$(TMPDIR)/root/opt/smartdc/papi/
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts
-	cp $(ROOT)/sdc-boot/*.sh \
-	    $(TMPDIR)/root/opt/smartdc/sdc-boot/
-	cp $(ROOT)/deps/sdc-scripts/*.sh \
-	    $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts/
+	mkdir -p $(TMPDIR)/root/opt/smartdc/boot
+	cp -R $(ROOT)/deps/sdc-scripts/* $(TMPDIR)/root/opt/smartdc/boot/
+	cp -R $(ROOT)/boot/* $(TMPDIR)/root/opt/smartdc/boot/
 	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(TMPDIR)
 
@@ -120,3 +118,5 @@ else
 endif
 include ./tools/mk/Makefile.smf.targ
 include ./tools/mk/Makefile.targ
+
+sdc-scripts: deps/sdc-scripts/.git
