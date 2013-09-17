@@ -7,7 +7,10 @@
 var test = require('tap').test;
 var restify = require('restify');
 var Logger = require('bunyan');
-var uuid = require('node-uuid');
+var libuuid = require('libuuid');
+function uuid() {
+    return (libuuid.create());
+}
 var SOCKET = '/tmp/.' + uuid();
 var util = require('util');
 var path = require('path');

@@ -6,7 +6,7 @@
   "private": true,
   "dependencies": {
     "restify": "2.5.1",
-    "node-uuid": "1.4.0",
+    "libuuid": "0.1.2",
     "nopt": "2.0.0",
     "bunyan": "0.21.3",
     "sigyan": "0.2.0",

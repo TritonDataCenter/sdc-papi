@@ -5,7 +5,10 @@
  */
 
 var restify = require('restify');
-var uuid = require('node-uuid');
+var libuuid = require('libuuid');
+function uuid() {
+    return (libuuid.create());
+}
 var Logger = require('bunyan');
 var nopt = require('nopt');
 var path = require('path');
