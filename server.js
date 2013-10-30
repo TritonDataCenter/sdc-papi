@@ -1,14 +1,11 @@
 /*
  * Copyright (c) 2013, Joyent, Inc. All rights reserved.
  *
- * Main entry-point for the Packages API.
+ * Main entry-point for the packages HTTP API. Parses the command line, config
+ * file, and then loads up the API.
  */
 
 var restify = require('restify');
-var libuuid = require('libuuid');
-function uuid() {
-    return (libuuid.create());
-}
 var Logger = require('bunyan');
 var nopt = require('nopt');
 var path = require('path');
@@ -33,10 +30,15 @@ var shortOpts = {
     'h': ['--help']
 };
 
-///--- Helpers
+
+
+/*
+ * Optionally display a message, then how to use this command, then exit.
+ */
 
 function usage(code, message) {
     var _opts = '';
+
     Object.keys(shortOpts).forEach(function (k) {
         var longOpt = shortOpts[k][0].replace('--', '');
         var type = opts[longOpt].name || 'string';
@@ -54,6 +56,12 @@ function usage(code, message) {
     process.stderr.write(msg + '\n');
     process.exit(code);
 }
+
+
+
+/*
+ * Fire up HTTP server
+ */
 
 function run() {
     return papi.createServer({
