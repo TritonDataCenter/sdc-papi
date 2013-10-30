@@ -6,18 +6,23 @@ apisections: PackageObjects, Packages, Ping, Changelog
 
 # SDC 7 Package API
 
-Note that, internally, with independence of the name choosen by Marketing,
-specifications used to create a machine from a given image are called packages,
-and referred as packages by all the APIs.
+The specifications used by SDC internally to create a machine from a given image
+are called packages, and are referred to as packages by all the APIs. For
+example, packages can specify the amount of RAM and CPU a new machine will use.
+The word 'packages' is independent of the name chosen by marketing for the
+outside world.
 
-Some of the package attributes are used by `vmadm` to create/resize machines.
-Please, refer to [vmadm man page](https://github.com/joyent/smartos-live/blob/master/src/vm/man/vmadm.1m.md#properties) to
-review the meaning of these properties for the machines.
+Some of the package attributes are used by `vmadm` to create or resize machines.
+Please refer to the [vmadm man page](https://github.com/joyent/smartos-live/blob/master/src/vm/man/vmadm.1m.md#properties)
+to review the meaning of these properties for the machines.
 
-# PackageObjects
 
-Package entries are stored in Moray in the form of JSON objects. Here is
-an example of a package:
+
+
+# Package objects
+
+Package entries are stored in Moray in the form of JSON objects. Here is an
+example of a package:
 
 
     {
@@ -44,124 +49,141 @@ an example of a package:
     }
 
 
-||**Attribute**||**Required**||**Explanation**||
-||uuid||Mandatory||UUID for the Package||
-||owner_uuid||Optional||UUID of the owner of this Package||
-||active||Mandatory||can be used for provisioning: true or false||
-||vcpus||Required during provisioning if type == kvm||number of cpus to show, Integer 1 - 64||
-||cpu_cap||Mandatory||CPU CAP,Integer 20-1000, formula: VCPU * Bursting Ratio * OverProvision Ratio * 100 + (vCPU <= 1 ? 50: 100)||
-||default||Mandatory||is this the default package: true or false||
-||group||Optional||group of associated instance types, either: Standard, High CPU, High Memory, High Storage, High IO or the Customer's Name||
-||description||Optional||description of this instance type||
-||max_lwps||Mandatory||max processes, Integer||
-||max_physical_memory||Mandatory||max RAM in MB, Integer||
-||max_swap||Mandatory||max SWAP in MB, Integer||
-||name||Mandatory||API name. JPC uses this formula to name packages: [version]-[familyname]-[RAM GB]-[type]-[flags], version is currently g3, familyname is group, type is either smartos or kvm, flags is to catch cluster computes (cc)||
-||common_name||Optional||Name displayed in the Portal||
-||quota||Mandatory||disk size in MB||
-||networks||Optional||List of networks to associate with||
-||min_platform||Optional||Object, k/v List of minimal supported OS platforms||
-||version||Mandatory||semver version number||
-||parent||Optional, useful only if a package is created for a customer from another package||API name of the instance type this was cloned from||
-||traits||Optional||set of traits for provisioning, currently limited to ssd:true and storage:true by current server installation||
-||zfs_io_priority||Mandatory||ZFS IO Priority, Integer 0 - 1000||
-||fss||Optional||Typically computed value, formula: OverProvision Ratio == 1 ? CPU_CAP: (Guest DRAM/Host DRAM provisionable) * Host CPUs * 100||
-||cpu_burst_ratio||Optional||Typically computed value, formula: (CPU_CAP / (OverProvision Ratio * Burst Ratio))/FSS||
-||ram_ratio||Optional||Typically computed value, formula: RAM GB/((CPU_CAP/100)*Bursting Ratio * OverProvision Ratio)||
-||overprovision_cpu||Optional||Overprovision CPU, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
-||overprovision_memory||Optional||Overprovision Memory, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
-||overprovision_storage||Optional||Overprovision Storage, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
-||overprovision_network||Optional||Overprovision Network, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
-||overprovision_io||Optional||Overprovision IO, 1 is don't overprovision. Anything over 1 is overprovisioning; 2 would mean overprovisioning by 200%.||
-
+|| **Attribute**         || **Required** || **Immutable** || **Type** || **Explanation**                                                                                         ||
+|| uuid                  || true         || true          || uuid     || Package identifier.                                                                                     ||
+|| owner_uuid            ||              ||               || uuid     || Package owner.                                                                                          ||
+|| active                || true         ||               || boolean  || Whether it can currently be used for provisioning.                                                      ||
+|| default               || true         ||               || boolean  || Whether this is the default package of this name through the SDC 6.5 API                                ||
+|| name                  || true         || true          || string   || Name of package in API.                                                                                 ||
+|| common_name           ||              ||               || string   || Name displayed in the Portal.                                                                           ||
+|| parent                ||              ||               || string   || `name` of the instance this was cloned from. Useful only if a package is created for a customer from another package. ||
+|| version               || true         || true          || string   || Semver version number.                                                                                  ||
+|| group                 ||              ||               || string   || Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name. ||
+|| description           ||              ||               || string   || Human description of this package.                                                                      ||
+|| vcpus                 || sometimes    || true          || integer  || Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                ||
+|| cpu_cap               || true         || true          || integer  || Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                            ||
+|| max_lwps              || true         || true          || integer  || Max number of processes allowed                                                                         ||
+|| max_physical_memory   || true         || true          || integer  || Max RAM in MiB.                                                                                         ||
+|| max_swap              || true         || true          || integer  || Max swap in MiB.                                                                                        ||
+|| quota                 || true         || true          || integer  || Disk size in MiB.                                                                                       ||
+|| networks              ||              ||               || array    || UUIDs of networks that the machine requires access to.                                                  ||
+|| min_platform          ||              ||               || hash     || Minimum version(s) of OS platforms that this package can use.                                           ||
+|| traits                ||              ||               || hash     || Set of traits for provisioning to servers. See DAPI docs for details on traits.                         ||
+|| zfs_io_priority       || true         || true          || integer  || ZFS I/O priority. This operates relative to other machines on a CN, determining which get I/O first.    ||
+|| overprovision_cpu     ||              ||               || float    || Whether, and by how much, to overprovision CPU capacity.                                                ||
+|| overprovision_memory  ||              ||               || float    || Whether, and by how much, to overprovision RAM.                                                         ||
+|| overprovision_storage ||              ||               || float    || Whether, and by how much, to overprovision disk storage.                                                ||
+|| overprovision_io      ||              ||               || float    || Whether, and by how much, to overprovision disk I/O.                                                    ||
+|| overprovision_network ||              ||               || float    || Whether, and by how much, to overprovision network bandwidth.                                           ||
+|| fss                   ||              ||               || integer  || Typically computed value. See below for more.                                                           ||
+|| cpu_burst_ratio       ||              ||               || float    || Typically computed value. See below for more.                                                           ||
+|| ram_ratio             ||              ||               || float    || Typically computed value. See below for more.                                                           ||
 
 
 ## Immutable Attributes and Package Persistence
 
-Additionally, the following package attributes are considered _immutable_:
-`uuid`, `name`, `version`, `quota`, `max_swap`, `max_physical_memory`,
-`cpu_cap`, `max_lwps`, `zfs_io_priority`, `vcpus`.
+Some package attributes are immutable (see above table). Any attempt to modify
+these attributes will result in a `409` HTTP response.
 
-Any attempt to modify these attributes will result into a `409` HTTP response.
+The reason these attributes are immutable is that packages are used as a source
+of information about the dimensions of a machine. If certain package attributes
+could be altered, it would invalidate packages as a reliable source for billing
+information.
 
-Reason for immutability is that packages are used as source of information for
-the initial specifications of a machine and, therefore, if some package
-attributes used for billing are modified once a package has been used during
-machine provisioning, that would invalidate the package to be used as source
-of billing information for any machine created following the package specs
-before the moment of the change.
+If an immutable value in a package needs to be altered, create a new package
+with:
 
-In case of the need to modify any of these attributes for an existing package,
-the way to proceed would be creating a new package with:
+- Same `name` and newest `version` of the package we would like to modify.
+- Use the altered value(s).
+- Mark the new package as `active`, and set the old package to `active: false`
 
-- Same `name` and newest `version` of the one we would like to modify.
-- Mark the new package as `active`
-- Set `active: false` for the old package.
-
-For this same reason, **packages cannot be deleted**, and any attempt to remove
-a package will result into a `405` HTTP response.
+**Packages cannot be deleted** for the same reason, and any attempt to remove a
+package will result in a `405` HTTP response.
 
 Once a package has been used as the base specification to create a machine, it
 must be available as source of information for billing systems forever.
 
 
+## Overprovisioning
+
+Overprovisioning sets an upper limit on how much a given dimension of a machine
+can be overprovisioned. It is a ratio, thus 1.0 means no overprovisioning, 1.5
+means overprovisioning by 50%, and so forth. Put another way, if
+overprovision_cpu = 2.0, then twice as many of that type of machine could be
+allocated on a set of CPU cores as overprovision_cpu = 1.0 machines could.
+Overprovisioning can apply to CPU, RAM, disk space, disk I/O, and network
+bandwidth. If an overprovision_* value is not provided in a package, it is left
+to DAPI to decide whether to provide a default value, if any.
+
+
+## Formulas
+
+|| **Attribute**   || **Formula**                                                                                 ||
+|| cpu_cap         || vCPU * Bursting Ratio * OverProvision Ratio * 100 + (vCPU <= 1 ? 50: 100)                   ||
+|| fss             || OverProvision Ratio == 1 ? CPU_CAP: (Guest DRAM/Host DRAM provisionable) * Host CPUs * 100. ||
+|| cpu_burst_ratio || (CPU_CAP / (OverProvision Ratio * Burst Ratio)) / FSS                                       ||
+|| ram_ratio       || RAM GB / ((CPU_CAP / 100) * Bursting Ratio * OverProvision Ratio)                           ||
+|| name            || JPC uses this formula to name packages: [version]-[familyname]-[RAM GB]-[type]-[flags], version is currently g3, familyname is group, type is either smartos or kvm, flags is to catch cluster computes (cc) ||
+
+
+
 
 # Packages
 
-The Packages endpoint let us get information about Packages on a single SDC setup,
-there is only one PAPI instance per datacenter. PAPI acts as an HTTP interface to
-Packages data stored in Moray.
+The Package API's HTTP endpoints let us fetch and modify information about the
+packages in an SDC installation. PAPI acts as an HTTP interface to package data
+stored in Moray.
 
 
 ## ListPackages (GET /packages)
 
-Returns a list of Packages according the specified search filter.
+Returns a list of Packages matching the specified search filter.
 
 
 ### Inputs
 
-All inputs are optional. Any attribute described into the
+All inputs are optional. Any attribute described in the
 [Package Objects](#Package Objects) section can be used to build a search
 filter.
 
-PAPI provides the flexibility to add any arbitrary attribute to packages,
+PAPI provides the flexibility to add any arbitrary attributes to packages,
 without the need to modify application code. These attributes will not be
-indexed and, therefore, shouldn't be used to build search filters.
+indexed, and therefore shouldn't be used to build search filters.
 
-Additionally indexed fields can also be added to PAPI by modifying the `schema`
-used by the application through [SAPI](https://mo.joyent.com/docs/sapi/master/).
+Additional indexed fields can be added to PAPI by modifying the `schema` used by
+the application through [SAPI](https://mo.joyent.com/docs/sapi/master/). Note
+that adding a new indexed field will not backfill existing package records, so
+this operation should be done manually.
 
-Note that adding a new indexed field will not backfill existing package records,
-and this operation should be done manually.
-
-Please, refer to each setup `/opt/smartdc/papi/etc/config.json` file in order
-to verify the fields being indexed and, therefore, usable for searches.
+Please refer to each setup `/opt/smartdc/papi/etc/config.json` file in order
+to verify the fields being indexed, and thus searchable.
 
 
 ### Search filters
 
-PAPI takes advantage of Moray facility to use [LDAP Search Filters](http://ldapjs.org/filters.html)
-for object searches. If you specify any of the aforementioned input attributes
-like:
+PAPI takes advantage of Moray facility to use
+[LDAP Search Filters](http://ldapjs.org/filters.html) for object searches. If
+you specify any of the aforementioned input attributes, like:
 
     GET /packages?owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785
     GET /packages?name=sdc_128
     GET /packages?owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785&name=sdc_128
 
-these will be used to build an [LDAP Equality Filter](http://ldapjs.org/filters.html#equalityfilter):
+these will be used to build an
+[LDAP Equality Filter](http://ldapjs.org/filters.html#equalityfilter):
 
     (&(owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785))
     (&(name=sdc_128))
     (&(name=sdc_128)(owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785))
 
 You can also use any of the other LDAP search filters by specifying the query
-string argument `filter`. On such case, any of the aforementioned attributes
-will be ignored, and whatever you specify as the value of `filter` will be used
-to perform the search.
+string argument `filter`. In that case, any of the aforementioned attributes
+will be ignored, and whatever you specify as the value of `filter` will be the
+only filter used to perform the search.
 
 For example, if you want to search for all the packages with a RAM greater than
-or equal to 1 GiB, where `fss` attribute is present, and with a name including
-`sdc_`, your filter would be like:
+or equal to 1 GiB, where the `fss` attribute is present, and with a name
+including `sdc_`, the filter would be:
 
     (&(name=sdc_*)(fss=*)(max_physical_memory>=1024))
 
@@ -169,55 +191,56 @@ and your request:
 
     GET /packages?filter=(%26(name=sdc_*)(fss=*)(max_physical_memory>=1024))
 
-Note how the '&' character is escaped as '%26' since the query must be URL encoded.
+Note how the '&' character is escaped as '%26', since the query must be URL-
+encoded.
 
 
 ### Collection Size Control Inputs
 
-ListPackages also allows controlling the size of the resulting collection with the
-use of the sort, limit and offset parameters. These three parameters can be used
-on either the regular or the LDAP filter version of the ListPackages endpoint.
+ListPackages also allows controlling the size of the resulting collection with
+use of the `sort`, `limit` and `offset` parameters. These three parameters can
+be used on either the regular or LDAP filter version of the ListPackages
+endpoint.
 
-||**Param**||**Type**||**Description**||
-||sort||String||Sort by any of the ListPackages attribute (except traits and networks).||
-||order||String||Order direction. Either `ASC` or `DESC`||
-||limit||Number||Return only the given number of Packages||
-||offset||Number||Limit the collection starting at the given offset||
+|| **Param** || **Type** || **Description**                                    ||
+|| sort      || string   || Sort by any string or number package attribute.    ||
+|| order     || string   || Order direction, either `ASC` or `DESC`.           ||
+|| limit     || integer  || Return only the given number of packages.          ||
+|| offset    || integer  || Limit the collection starting at the given offset. ||
 
 Note that every ListPackages request will return an `x-resource-count` HTTP
-header with a value equal to the total number of Packages matching the given
-search options, (or all the packages).
+header, with a value equal to the total number of packages matching the given
+search options.
 
 
 ### Responses
 
-||**Code**||**Description**||**Response**||
-||200||||Array of Package objects||
+|| **Code** || **Description** || **Response**             ||
+|| 200      ||                 || Array of Package objects ||
 
 
 ## GetPackage (GET /packages/:uuid)
 
-Returns a package with the specified UUID.
+Returns the package with the specified UUID.
 
 
 ### Inputs
 
-||**Param**||**Type**||**Description**||**Required?**||
-||uuid||UUID||Package UUID||Yes||
-||owner_uuid||UUID||Package Owner||No||
+|| **Param**  || **Type** || **Description** || **Required?** ||
+|| uuid       || UUID     || Package UUID    || true          ||
+|| owner_uuid || UUID     || Package Owner   ||               ||
 
 
 ### Responses
 
-||**Code**||**Description**||**Response**||
-||200||||Package object||
-||404||Package not found||Error object||
+|| **Code** || **Description**   || **Response**   ||
+|| 200      || Package found     || Package object ||
+|| 404      || Package not found || Error object   ||
 
 
 ### Example
 
     GET /packages/00956725-4689-4e2c-9d25-f2172f496f9c
-
 
 
 ## CreatePackage (POST /packages)
@@ -227,73 +250,50 @@ Creates a new package.
 
 ### Required Inputs
 
-All the attributes set as `required` into the `etc/config.json` schema. Actually:
-
-        "active",
-        "cpu_cap",
-        "default",
-        "group",
-        "description",
-        "max_lwps",
-        "max_physical_memory",
-        "max_swap",
-        "name",
-        "common_name",
-        "quota", 
-        "version", 
-        "zfs_io_priority"
+All attributes listed in the `required` array in the `etc/config.json` schema.
+See the first table above for the default required attributes.
 
 
 ### Optional inputs
 
-Remaining attributes defined into schema plus any arbitrary attribute meaningful
-for the current setup.
+Remaining attributes defined in the schema, plus any arbitrary attribute
+meaningful for the current setup.
 
 
-### Inputs validation
+### Input validation
 
 There are some attributes whose values must match some restrictions. In order
-to get an updated list of these, you can check the [PAPI validations file](https://mo.joyent.com/papi/blob/master/lib/validations.js).
+to get an updated list of these, you can check the
+[PAPI validations file](https://mo.joyent.com/papi/blob/master/lib/validations.js).
 
 
 ### Response Codes
 
-||**Code**||**Description**||**Response**||
-||201||New Package created||Package object||
-||409||Missing parameter||Error object||
-||409||Invalid parameter||Error object||
+|| **Code** || **Description**     || **Response**   ||
+|| 201      || New Package created || Package object ||
+|| 409      || Missing parameter   || Error object   ||
+|| 409      || Invalid parameter   || Error object   ||
 
 
 ## UpdatePackage (PUT /packages/:uuid)
 
-Performs an update operation into package non immutable fields.
+Performs an update operation on a package's mutable attributes.
 
 
 ### UpdatePackage General Inputs
 
-Any package attribute not included into `etc/config.json` `immutable` setting.
-Actually, the following is the list of immutable fields:
-
-        "uuid",
-        "name",
-        "version",
-        "quota",
-        "max_swap",
-        "max_physical_memory",
-        "cpu_cap",
-        "max_lwps",
-        "zfs_io_priority",
-        "vcpus"
+Any attributes not listed in the `immutable` array in the `etc/config.json`
+schema. See the first table above for the default required attributes.
 
 
 ### UpdatePackage Response Codes
 
-||**Code**||**Description**||**Response**||
-||200||Package updated||Package object||
-||404||Package not found||Error object||
-||409||Missing parameter||Error object||
-||409||Invalid parameter||Error object||
-||409||Attempt to modify immutable attribute||Error object||
+|| **Code** || **Description**                     || **Response**   ||
+|| 200      || Package updated                     || Package object ||
+|| 404      || Package not found                   || Error object   ||
+|| 409      || Missing parameter                   || Error object   ||
+|| 409      || Invalid parameter                   || Error object   ||
+|| 409      || Will not modify immutable attribute || Error object   ||
 
 
 ## DeletePackage (DELETE /package/:uuid)
@@ -301,32 +301,21 @@ Actually, the following is the list of immutable fields:
 Packages cannot be destroyed.
 
 
-### Inputs
-
-||**Param**||**Type**||**Description**||**Required?**||
-||uuid||UUID||Package UUID||Yes||
-
-
-### Responses
-
-||**Code**||**Description**||**Response**||
-||404||Package not found||Error object||
-||405||Package cannot be deleted||Error object||
 
 
 # Ping (GET /ping)
 
     GET /ping
 
-When everythig is OK it should return something like:
+When everything appears healthy to PAPI, it should return something like:
 
     {
       "pid":1004,
       "backend":"up"
     }
 
-If backend connection or ping attempt isn't OK, it'll return `down` together
-with the backend error message:
+If the backend connection or ping attempt isn't okay, it'll return `down`
+along with the backend error message:
 
     {
       "pid":1037,
@@ -337,6 +326,10 @@ with the backend error message:
 
 # Changelog
 
+
+## 2013-10-28
+
+- Minor tweaks
 
 ## 2013-06-15
 
