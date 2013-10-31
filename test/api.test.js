@@ -80,23 +80,21 @@ test('setup', function (t) {
         log: LOG,
         overrides: {},
         test: true
-    }, function (s) {
+    }, function (err, s) {
         t.ok(s, 'server ok');
         t.ok(s.backend, 'server backend ok');
         server = s;
         backend = s.backend;
-        s.start(function () {
-            client = restify.createJsonClient({
-                log: s.log,
-                url: 'http://127.0.0.1:' + config.port,
-                version: '*',
-                retryOptions: {
-                    retry: 0
-                }
-            });
-            t.ok(client, 'client ok');
-            t.end();
+        client = restify.createJsonClient({
+            log: s.log,
+            url: 'http://127.0.0.1:' + config.port,
+            version: '*',
+            retryOptions: {
+                retry: 0
+            }
         });
+        t.ok(client, 'client ok');
+        t.end();
     });
 });
 
