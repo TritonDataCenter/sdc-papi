@@ -68,12 +68,13 @@ function run() {
         config: PARSED.file || DEFAULT_CFG,
         overrides: PARSED,
         log: LOG
-    }, function (server) {
-        server.start(function () {
-            LOG.info('Packages API listening at %s', server.url);
-        });
+    }, function (err, server) {
+        if (err) {
+            LOG.error(err, 'failed to start server');
+            process.abort();
+        }
 
-        return server;
+        LOG.info('Packages API listening at %s', server.url);
     });
 }
 
