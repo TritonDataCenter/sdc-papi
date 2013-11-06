@@ -31,7 +31,7 @@ JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 SMF_MANIFESTS_IN = smf/manifests/papi.xml.in
 
-NODE_PREBUILT_VERSION=v0.8.24
+NODE_PREBUILT_VERSION=v0.8.26
 
 ifeq ($(shell uname -s),SunOS)
     NODE_PREBUILT_TAG=zone
