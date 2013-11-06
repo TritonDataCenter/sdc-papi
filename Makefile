@@ -81,7 +81,6 @@ release: check all docs
 		$(ROOT)/bin \
 		$(ROOT)/etc \
 		$(ROOT)/lib \
-		$(ROOT)/sbin \
 		$(ROOT)/server.js \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
