@@ -173,7 +173,7 @@ test('POST /packages (fields validation failed)', function (t) {
         active: true,
         networks: [
             'aefd7d3c-a4fd-4812-9dd7-24733974d861',
-            'de749393-836c-42ce-9c7b-e81072ca3a23'
+            'de749393-836c-42ce-9c7b-'
         ],
         traits: {
             bool: true,
@@ -189,7 +189,17 @@ test('POST /packages (fields validation failed)', function (t) {
     client.post('/packages', p, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
-        t.ok(/invalid/g.test(err.message));
+        t.equal(err.message,
+                /* BEGIN JSSTYLED */
+                "Package uuid: 'invalid-uuid-for-sure' is invalid (must be a " +
+                "UUID), Package networks: '[\"aefd7d3c-a4fd-4812-9dd7-" +
+                "24733974d861\",\"de749393-836c-42ce-9c7b-\"]' is invalid " +
+                "(must be an array containing UUIDs), RAM: '32' is invalid " +
+                "(must be greater or equal than 64), Disk: '512' is invalid " +
+                "(must be greater or equal than 1024), ZFS IO Priority: " +
+                "'10000' is invalid (must be greater or equal than 0 and " +
+                "less than 1000)');");
+                /* END JSSTYLED */
         console.log('VALIDATION ERRORS: ' + err.message);
         t.end();
     });
