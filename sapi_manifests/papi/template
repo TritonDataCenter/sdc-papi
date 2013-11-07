@@ -9,7 +9,7 @@
             "minTimeout": 1000
         },
         "noCache": true,
-        "version": 4
+        "version": 5
     },
     "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",
     "first_boot": {{{SERVICE_IS_FIRST_BOOT}}},
@@ -28,7 +28,7 @@
         "url": "http://{{{SAPI_SERVICE}}}"
     },
     "bucket": "sdc_packages",
-    "warning": "Please, keep 'is_default' and 'group_name' into schema. Translation happening within the App, given 'default' and 'group' cannot be used as PostgreSQL indexes.",
+    "warning": "Please keep 'is_default' and 'group_name' in schema. A translation is happening within the app, since 'default' and 'group' cannot be used as PostgreSQL indexes.',
         "schema": {
         "uuid": {
             "type": "string",
@@ -42,8 +42,8 @@
             "type": "string",
             "index": true
         },
-        "owner_uuid": {
-            "type": "string",
+        "owner_uuids": {
+            "type": "[string]",
             "index": true
         },
         "active": {

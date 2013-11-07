@@ -178,23 +178,23 @@ function decode(obj, log) {
         }
     }
 
-/*
- *   TODO: add support for multiple owners, and s/owner_uuid/owner_uuids/
- *
- *   if (obj.owner_uuid) {
- *       if (typeof (obj.owner_uuid) === 'string') {
- *           try {
- *               obj.owner_uuid = JSON.parse(obj.owner_uuid);
- *           } catch (e) {
- *               obj.owner_uuid = [];
- *               log.error({ err: e, package: obj }, 'Error importing owners');
- *           }
- *       } else if (!Array.isArray(obj.owner_uuid)) {
- *           obj.owner_uuid = [];
- *           log.error({ package: obj }, 'Error importing owners');
- *       }
- *   }
- */
+    // we're changing from owner_uuid to owner_uuids here
+    if (obj.owner_uuid) {
+        if (typeof (obj.owner_uuid) === 'string') {
+            try {
+                obj.owner_uuids = JSON.parse(obj.owner_uuid);
+            } catch (e) {
+                obj.owner_uuids = [obj.owner_uuid];
+            }
+        } else if (!Array.isArray(obj.owner_uuid)) {
+            obj.owner_uuids = [];
+            log.error({ package: obj }, 'Error importing owners');
+        } else {
+            obj.owner_uuids = obj.owner_uuid;
+        }
+
+        delete obj.owner_uuid;
+    }
 
     if (obj.traits) {
         try {
@@ -282,13 +282,6 @@ function loadLdifPackages(config, log, cb) {
                 var name  = match[1];
                 var value = match[2];
                 var orig  = lookup[name];
-
-                // TODO: remove hack when multiple owner_uuids are supported
-                if (name === 'owner_uuid') {
-                    lookup[name] = value;
-                    return;
-                }
-                //
 
                 if (orig) {
                     if (Array.isArray(orig)) {

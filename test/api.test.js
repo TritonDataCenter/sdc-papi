@@ -249,8 +249,8 @@ test('GET /packages (Search by owner_uuid)', function (t) {
         t.ok(res.headers['x-resource-count'], 'x-resource-count');
         t.ok(Array.isArray(obj), 'Packages list');
         obj.forEach(function (p) {
-            t.ok(typeof (p.owner_uuid) === 'undefined' ||
-                p.owner_uuid === config.ufds_admin_uuid);
+            t.ok(typeof (p.owner_uuids) === 'undefined' ||
+                p.owner_uuids[0] === config.ufds_admin_uuid);
         });
         t.end();
     });
@@ -351,11 +351,13 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
 
 test('PUT /packages/:uuid (validation failed)', function (t) {
     client.put('/packages/' + PACKAGE.uuid, {
-        owner_uuid: 'this-is-not-a-valid-uuid'
+        owner_uuids: ['this-is-not-a-valid-uuid']
     }, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
-        t.ok(/invalid/.test(err.message));
+        t.equal(err.message, 'Package owner_uuids: \'["this-is-not-a-valid-' +
+                             'uuid"]\' is invalid (must be an array ' +
+                             'containing UUIDs)');
         t.end();
     });
 });
@@ -363,13 +365,14 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
 
 test('PUT /packages/:uuid (skip-validation)', function (t) {
     client.put('/packages/' + PACKAGE.uuid, {
-        owner_uuid: 'this-is-not-a-valid-uuid',
+        owner_uuids: ['this-is-not-a-valid-uuid'],
         skip_validation: true
     }, function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
-        t.equal(pkg.owner_uuid, 'this-is-not-a-valid-uuid');
+        t.equal(pkg.owner_uuids[0], 'this-is-not-a-valid-uuid');
+        t.equal(pkg.owner_uuids.length, 1);
         t.end();
     });
 });
@@ -377,7 +380,7 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
 
 test('PUT /packages/:uuid (OK)', function (t) {
     client.put('/packages/' + PACKAGE.uuid, {
-        owner_uuid: config.ufds_admin_uuid
+        owner_uuids: [config.ufds_admin_uuid]
     }, function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
@@ -386,7 +389,8 @@ test('PUT /packages/:uuid (OK)', function (t) {
         t.equal('string', typeof (pkg.updated_at));
         t.equal(pkg.created_at, PACKAGE.created_at);
         t.notEqual(pkg.updated_at, PACKAGE.updated_at);
-        t.equal(pkg.owner_uuid, config.ufds_admin_uuid);
+        t.equal(pkg.owner_uuids[0], config.ufds_admin_uuid);
+        t.equal(pkg.owner_uuids.length, 1);
         t.end();
     });
 });
