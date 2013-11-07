@@ -28,7 +28,7 @@
         "url": "http://{{{SAPI_SERVICE}}}"
     },
     "bucket": "sdc_packages",
-    "warning": "Please keep 'is_default' and 'group_name' in schema. A translation is happening within the app, since 'default' and 'group' cannot be used as PostgreSQL indexes.',
+    "warning": "Please keep 'is_default' and 'group_name' in schema. A translation is happening within the app, since 'default' and 'group' cannot be used as PostgreSQL indexes.",
         "schema": {
         "uuid": {
             "type": "string",
