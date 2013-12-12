@@ -25,7 +25,7 @@
         "maxConnections": 1
     },
     "sapi": {
-        "url": "http://10.99.99.34"
+        "url": "http://10.99.99.33"
     },
     "bucket": "sdc_packages",
     "warning": "Please keep 'is_default' and 'group_name' in schema. A translation is happening within the app, since 'default' and 'group' cannot be used as PostgreSQL indexes.",
