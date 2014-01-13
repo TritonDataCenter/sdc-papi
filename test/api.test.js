@@ -21,7 +21,7 @@ var papi = require('../lib/papi');
 
 var cfg = path.resolve(__dirname, '../etc/config.json');
 var cfg_file = fs.existsSync(cfg) ? cfg :
-               path.resolve(__dirname, '../etc/config.coal.json');
+               path.resolve(__dirname, '../etc/config.test.json');
 var config = JSON.parse(fs.readFileSync(cfg_file, 'utf-8'));
 config.logger = {
     streams: [ {
