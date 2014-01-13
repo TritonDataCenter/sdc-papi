@@ -57,6 +57,7 @@ var optTypes = {
     'binddn': ldap.DN,
     'password': String,
     'timeout': Number,
+    'overwrite': Boolean,
     'url': url,
     'ldif': String,
     'json': String
@@ -69,6 +70,7 @@ var shortOpts = {
     'D': ['--binddn'],
     'w': ['--password'],
     't': ['--timeout'],
+    'o': ['--overwrite'],
     'd': ['--debug'],
     'y': ['--dryrun']
 };
@@ -384,8 +386,13 @@ function savePapiPackages(packages, config, log, callback) {
                 return next();
             }
 
-            return backend.createPkg(pkg, { req_id: pkg.uuid },
-                                     function (err2) {
+            // updatePkg does a create-or-update
+            var creator = config.overwrite ?
+                          backend.updatePkg : backend.createPkg;
+
+            var create = creator.bind(backend, pkg.uuid, pkg,
+                                      { req_id: pkg.uuid },
+                                      function (err2) {
                 if (err2 === 'ObjectAlreadyExistsError') {
                     log.warn({ pkg: pkg }, 'Package already exists');
                 } else if (err2) {
@@ -398,6 +405,8 @@ function savePapiPackages(packages, config, log, callback) {
 
                 return next();
             });
+
+            return create();
         };
 
         vasync.forEachPipeline({ func: savePkg, inputs: packages },
@@ -457,8 +466,9 @@ function main() {
     var papiLog = sourceLog.child({ component: 'papi' });
 
     var config = tools.configure(DEFAULT_CFG, {}, papiLog);
-    config.dryrun = opts.dryrun;
-    config.log    = papiLog;
+    config.dryrun    = opts.dryrun;
+    config.overwrite = opts.overwrite;
+    config.log       = papiLog;
 
     perror = function (err) {
         var errOut = (opts.debug ? err.stack : err.message);
