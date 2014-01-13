@@ -174,8 +174,7 @@
         "name",
         "quota", 
         "version", 
-        "zfs_io_priority",
-        "fss"
+        "zfs_io_priority"
     ],
 
     "immutable": [
