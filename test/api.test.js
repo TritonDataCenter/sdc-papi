@@ -51,6 +51,7 @@ var entry = {
     quota: 5120,
     max_swap: 256,
     cpu_cap: 350,
+    cpu_burst_ratio: 0.5,
     max_lwps: 2000,
     zfs_io_priority: 1,
     'default': true,
@@ -119,6 +120,7 @@ test('POST /packages (OK)', function (t) {
         t.ok(pkg.uuid);
         t.equal(pkg.os, 'smartos');
         t.equal(pkg.vcpus, 1);
+        t.equal(pkg.cpu_burst_ratio, 0.5);
         t.equal(pkg.max_swap, 256);
         t.equal(pkg.traits.bool, true);
         t.ok(Array.isArray(pkg.networks));

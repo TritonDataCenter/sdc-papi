@@ -123,31 +123,31 @@
             "index": true
         },
         "cpu_burst_ratio": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "ram_ratio": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_cpu": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_memory": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_storage": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_network": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_io": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "created_at": {

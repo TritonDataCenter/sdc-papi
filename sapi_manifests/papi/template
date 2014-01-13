@@ -29,7 +29,7 @@
     },
     "bucket": "sdc_packages",
     "warning": "Please keep 'is_default' and 'group_name' in schema. A translation is happening within the app, since 'default' and 'group' cannot be used as PostgreSQL indexes.",
-        "schema": {
+    "schema": {
         "uuid": {
             "type": "string",
             "unique": true
@@ -123,31 +123,31 @@
             "index": true
         },
         "cpu_burst_ratio": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "ram_ratio": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_cpu": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_memory": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_storage": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_network": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "overprovision_io": {
-            "type": "number",
+            "type": "double",
             "index": true
         },
         "created_at": {
