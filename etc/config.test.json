@@ -151,11 +151,11 @@
             "index": true
         },
         "created_at": {
-            "type": "number",
+            "type": "date",
             "index": true
         },
         "updated_at": {
-            "type": "number",
+            "type": "date",
             "index": true
         },
         "billing_tag": {
