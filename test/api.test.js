@@ -46,6 +46,7 @@ var PACKAGE;
 var entry = {
     name: 'regular_128',
     version: '1.0.0',
+    os: 'smartos',
     max_physical_memory: 128,
     quota: 5120,
     max_swap: 256,
@@ -116,6 +117,7 @@ test('POST /packages (OK)', function (t) {
         t.equal(res.statusCode, 201);
         t.ok(pkg);
         t.ok(pkg.uuid);
+        t.equal(pkg.os, 'smartos');
         t.equal(pkg.vcpus, 1);
         t.equal(pkg.max_swap, 256);
         t.equal(pkg.traits.bool, true);
@@ -162,6 +164,7 @@ test('POST /packages (fields validation failed)', function (t) {
     var p = {
         name: 'regular_128',
         version: '1.0.0',
+        os: 2,
         max_physical_memory: 32,
         quota: 512,
         max_swap: 256,
@@ -198,12 +201,11 @@ test('POST /packages (fields validation failed)', function (t) {
                 "(must be greater or equal than 64), Disk: '512' is invalid " +
                 "(must be greater or equal than 1024), ZFS IO Priority: " +
                 "'10000' is invalid (must be greater or equal than 0 and " +
-                "less than 1000)');");
+                "less than 1000), OS: '2' is invalid (must be a string if " +
+                "present)");
                 /* END JSSTYLED */
-        console.log('VALIDATION ERRORS: ' + err.message);
         t.end();
     });
-    t.end();
 });
 
 
@@ -330,6 +332,7 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
     var immutable = {
         'name': 'regular_129',
         'version': '1.0.1',
+        'os': 'linux',
         'quota': 5124,
         'max_swap': 257,
         'max_physical_memory': 129,
@@ -343,7 +346,16 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
         function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
-        t.ok(/is immutable/.test(err.message));
+
+        t.equal(err.message,
+                /* BEGIN JSSTYLED */
+                "Field 'name' is immutable, Field 'version' is immutable, " +
+                "Field 'os' is immutable, Field 'quota' is immutable, " +
+                "Field 'max_swap' is immutable, Field 'max_physical_memory' " +
+                "is immutable, Field 'cpu_cap' is immutable, Field " +
+                "'max_lwps' is immutable, Field 'zfs_io_priority' is " +
+                "immutable, Field 'vcpus' is immutable");
+                /* END JSSTYLED */
         t.end();
     });
 });

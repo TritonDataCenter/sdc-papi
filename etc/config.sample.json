@@ -94,6 +94,10 @@
             "type": "[string]",
             "index": true
         },
+        "os": {
+            "type": "string",
+            "index": true
+        },
         "min_platform": {
             "type": "object",
             "index": false
@@ -178,6 +182,7 @@
         "uuid",
         "name",
         "version",
+        "os",
         "quota",
         "max_swap",
         "max_physical_memory",
