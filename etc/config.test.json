@@ -30,7 +30,7 @@
     "bucket": "sdc_packages",
     "schema": {
         "uuid": {
-            "type": "string",
+            "type": "uuid",
             "unique": true,
             "required": true,
             "immutable": true
@@ -52,7 +52,7 @@
             "immutable": true
         },
         "owner_uuids": {
-            "type": "[string]",
+            "type": "[uuid]",
             "index": true
         },
         "active": {
@@ -113,7 +113,7 @@
             "immutable": true
         },
         "networks": {
-            "type": "[string]",
+            "type": "[uuid]",
             "index": true
         },
         "os": {

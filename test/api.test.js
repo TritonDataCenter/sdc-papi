@@ -202,15 +202,14 @@ test('POST /packages (fields validation failed)', function (t) {
         t.equal(res.statusCode, 409);
         t.equal(err.message,
                 /* BEGIN JSSTYLED */
-                "'os': '2' is invalid (must be a string), " +
-                "'uuid': 'invalid-uuid-for-sure' is invalid (must be a UUID), "+
                 "'networks': '[\"aefd7d3c-a4fd-4812-9dd7-24733974d861\"," +
-                "\"de749393-836c-42ce-9c7b-\"]' is invalid (must be an array " +
-                "containing UUIDs), 'max_physical_memory': '32' is invalid " +
-                "(must be greater or equal to 64), 'quota': '512' is invalid " +
-                "(must be greater or equal to 1024), 'zfs_io_priority': " +
-                "'10000' is invalid (must be greater or equal to 0 and less " +
-                "than 1000)");
+                "\"de749393-836c-42ce-9c7b-\"]' is invalid (contains " +
+                "non-UUID items), 'os': '2' is invalid (must be a string), " +
+                "'uuid': 'invalid-uuid-for-sure' is invalid (must be a " +
+                "UUID), 'max_physical_memory': '32' is invalid (must be " +
+                "greater or equal to 64), 'quota': '512' is invalid (must be " +
+                "greater or equal to 1024), 'zfs_io_priority': '10000' is " +
+                "invalid (must be greater or equal to 0 and less than 1000)");
                 /* END JSSTYLED */
         t.end();
     });
@@ -376,8 +375,8 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
         t.equal(res.statusCode, 409);
         t.equal(err.message,
                 /* BEGIN JSSTYLED */
-                "'owner_uuids': '[\"this-is-not-a-valid-uuid\"]' " +
-                "is invalid (must be an array containing UUIDs)");
+                "'owner_uuids': '[\"this-is-not-a-valid-uuid\"]' is invalid " +
+                "(contains non-UUID items)");
                 /* END JSSTYLED */
         t.end();
     });
