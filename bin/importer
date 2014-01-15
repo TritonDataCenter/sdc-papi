@@ -9,21 +9,21 @@
  *
  * Typical usage for importing from an LDIF file:
  *
- * ./bin/ldap-import --ldif packages.ldif
+ * ./bin/importer --ldif packages.ldif
  *
  * Typical usage for importing from a JSON dump from mapi2moray:
  *
- * ./bin/ldap-import --json papi_packages.moray
+ * ./bin/importer --json papi_packages.moray
  *
  * Typical usage for importing from UFDS:
  *
- * ./bin/ldap-import --url ldaps://ufds.coal.joyent.us --binddn 'cn=root' \
+ * ./bin/importer --url ldaps://ufds.coal.joyent.us --binddn 'cn=root' \
  *   --password 'secret'
  *
  * If binder is running, ufds.coal.joyent.us addresses can be set using:
  *
  * dig +short @10.99.99.11 ufds.coal.joyent.us A
- * ./bin/ldap-import --url ldaps://10.99.99.18 --binddn 'cn=root' \
+ * ./bin/importer --url ldaps://10.99.99.18 --binddn 'cn=root' \
  *   --password 'secret' --debug 1 2>&1 | bunyan
  */
 

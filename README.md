@@ -2,7 +2,7 @@
 
 Repository: <git@git.joyent.com:papi.git>
 Browsing: <https://mo.joyent.com/papi>
-Who: Pedro P. Candel
+Who: Pedro P. Candel, Marsell Kukuljevic
 Docs: <https://mo.joyent.com/docs/papi>
 Tickets/bugs: <https://devhub.joyent.com/jira/browse/PAPI>
 
