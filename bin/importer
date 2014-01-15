@@ -373,7 +373,7 @@ function savePapiPackages(packages, config, log, callback) {
 
         var success = 0;
         var savePkg = function (pkg, next) {
-            var validationErrs = validations.validate(pkg);
+            var validationErrs = validations.validate(pkg, backend.schema);
 
             if (validationErrs) {
                 log.error({ pkg: pkg, err: validationErrs },

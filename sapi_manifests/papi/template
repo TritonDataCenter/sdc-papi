@@ -31,7 +31,9 @@
     "schema": {
         "uuid": {
             "type": "string",
-            "unique": true
+            "unique": true,
+            "required": true,
+            "immutable": true
         },
         "urn": {
             "type": "string",
@@ -39,7 +41,15 @@
         },
         "name": {
             "type": "string",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
+        },
+        "version": {
+            "type": "string",
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "owner_uuids": {
             "type": "[string]",
@@ -47,19 +57,24 @@
         },
         "active": {
             "type": "boolean",
-            "index": true
+            "index": true,
+            "required": true
         },
         "vcpus": {
             "type": "number",
-            "index": true
+            "index": true,
+            "immutable": true
         },
         "cpu_cap": {
             "type": "number",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "default": {
             "type": "boolean",
-            "index": true
+            "index": true,
+            "required": true
         },
         "group": {
             "type": "string",
@@ -71,15 +86,21 @@
         },
         "max_lwps": {
             "type": "number",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "max_physical_memory": {
             "type": "number",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "max_swap": {
             "type": "number",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "common_name": {
             "type": "string",
@@ -87,7 +108,9 @@
         },
         "quota": {
             "type": "number",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "networks": {
             "type": "[string]",
@@ -95,15 +118,12 @@
         },
         "os": {
             "type": "string",
-            "index": true
+            "index": true,
+            "immutable": true
         },
         "min_platform": {
             "type": "object",
             "index": false
-        },
-        "version": {
-            "type": "string",
-            "index": true
         },
         "parent": {
             "type": "string",
@@ -115,7 +135,9 @@
         },
         "zfs_io_priority": {
             "type": "number",
-            "index": true
+            "index": true,
+            "required": true,
+            "immutable": true
         },
         "fss": {
             "type": "number",
@@ -161,30 +183,5 @@
             "type": "string",
             "index": true
         }
-    },
-    "required": [
-        "active",
-        "cpu_cap",
-        "default",
-        "max_lwps",
-        "max_physical_memory",
-        "max_swap",
-        "name",
-        "quota",
-        "version",
-        "zfs_io_priority"
-    ],
-    "immutable": [
-        "uuid",
-        "name",
-        "version",
-        "os",
-        "quota",
-        "max_swap",
-        "max_physical_memory",
-        "cpu_cap",
-        "max_lwps",
-        "zfs_io_priority",
-        "vcpus"
-    ]
+    }
 }

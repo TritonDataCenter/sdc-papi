@@ -153,10 +153,16 @@ test('POST /packages (missing required fields)', function (t) {
     client.post('/packages', p, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
-        config.required.forEach(function (r) {
-            var re = new RegExp(r);
-            t.ok(re.test(err.message), r + ' is missing');
-        });
+
+        t.equal(err.message,
+                /* BEGIN JSSTYLED */
+                "'active' is missing, 'cpu_cap' is missing, " +
+                "'default' is missing, 'max_lwps' is missing, " +
+                "'max_physical_memory' is missing, 'max_swap' is missing, " +
+                "'name' is missing, 'quota' is missing, " +
+                "'version' is missing, 'zfs_io_priority' is missing");
+                /* END JSSTYLED */
+
         t.end();
     });
 });
@@ -196,15 +202,15 @@ test('POST /packages (fields validation failed)', function (t) {
         t.equal(res.statusCode, 409);
         t.equal(err.message,
                 /* BEGIN JSSTYLED */
-                "Package uuid: 'invalid-uuid-for-sure' is invalid (must be a " +
-                "UUID), Package networks: '[\"aefd7d3c-a4fd-4812-9dd7-" +
-                "24733974d861\",\"de749393-836c-42ce-9c7b-\"]' is invalid " +
-                "(must be an array containing UUIDs), RAM: '32' is invalid " +
-                "(must be greater or equal than 64), Disk: '512' is invalid " +
-                "(must be greater or equal than 1024), ZFS IO Priority: " +
-                "'10000' is invalid (must be greater or equal than 0 and " +
-                "less than 1000), OS: '2' is invalid (must be a string if " +
-                "present)");
+                "'os': '2' is invalid (must be a string), " +
+                "'uuid': 'invalid-uuid-for-sure' is invalid (must be a UUID), "+
+                "'networks': '[\"aefd7d3c-a4fd-4812-9dd7-24733974d861\"," +
+                "\"de749393-836c-42ce-9c7b-\"]' is invalid (must be an array " +
+                "containing UUIDs), 'max_physical_memory': '32' is invalid " +
+                "(must be greater or equal to 64), 'quota': '512' is invalid " +
+                "(must be greater or equal to 1024), 'zfs_io_priority': " +
+                "'10000' is invalid (must be greater or equal to 0 and less " +
+                "than 1000)");
                 /* END JSSTYLED */
         t.end();
     });
@@ -351,12 +357,11 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
 
         t.equal(err.message,
                 /* BEGIN JSSTYLED */
-                "Field 'name' is immutable, Field 'version' is immutable, " +
-                "Field 'os' is immutable, Field 'quota' is immutable, " +
-                "Field 'max_swap' is immutable, Field 'max_physical_memory' " +
-                "is immutable, Field 'cpu_cap' is immutable, Field " +
-                "'max_lwps' is immutable, Field 'zfs_io_priority' is " +
-                "immutable, Field 'vcpus' is immutable");
+                "'cpu_cap' is immutable, 'max_lwps' is immutable, " +
+                "'max_physical_memory' is immutable, 'max_swap' is immutable, "+
+                "'name' is immutable, 'os' is immutable, " +
+                "'quota' is immutable, 'vcpus' is immutable, " +
+                "'version' is immutable, 'zfs_io_priority' is immutable");
                 /* END JSSTYLED */
         t.end();
     });
@@ -369,9 +374,11 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
     }, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
-        t.equal(err.message, 'Package owner_uuids: \'["this-is-not-a-valid-' +
-                             'uuid"]\' is invalid (must be an array ' +
-                             'containing UUIDs)');
+        t.equal(err.message,
+                /* BEGIN JSSTYLED */
+                "'owner_uuids': '[\"this-is-not-a-valid-uuid\"]' " +
+                "is invalid (must be an array containing UUIDs)");
+                /* END JSSTYLED */
         t.end();
     });
 });
