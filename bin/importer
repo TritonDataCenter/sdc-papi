@@ -42,7 +42,7 @@ var validations = require('../lib/validations');
 
 
 
-var DEFAULT_CFG = path.normalize(__dirname + '/../etc/config.json');
+var DEFAULT_CFG_PATH = path.normalize(__dirname + '/../etc/config.json');
 
 nopt.typeDefs.DN = {
     type: ldap.DN,
@@ -52,6 +52,7 @@ nopt.typeDefs.DN = {
 };
 
 var optTypes = {
+    'config': String,
     'debug': Number,
     'dryrun': Boolean,
     'binddn': ldap.DN,
@@ -64,6 +65,7 @@ var optTypes = {
 };
 
 var shortOpts = {
+    'c': ['--config'],
     'u': ['--url'],
     'l': ['--ldif'],
     'j': ['--json'],
@@ -465,7 +467,14 @@ function main() {
 
     var papiLog = sourceLog.child({ component: 'papi' });
 
-    var config = tools.configure(DEFAULT_CFG, {}, papiLog);
+    var configPath;
+    if (opts.config) {
+       configPath = path.resolve(process.cwd(), opts.config);
+    } else {
+       configPath = DEFAULT_CFG_PATH;
+    }
+
+    var config = tools.configure(configPath, {}, papiLog);
     config.dryrun    = opts.dryrun;
     config.overwrite = opts.overwrite;
     config.log       = papiLog;
