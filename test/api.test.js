@@ -1,8 +1,9 @@
 /*
  * Copyright (c) 2013, Joyent, Inc. All rights reserved.
+ *
+ * Test the Package API endpoints,
  */
 
-/* Test the Package API endpoints */
 
 var test = require('tap').test;
 var restify = require('restify');
@@ -11,7 +12,6 @@ var libuuid = require('libuuid');
 function uuid() {
     return (libuuid.create());
 }
-var SOCKET = '/tmp/.' + uuid();
 var util = require('util');
 var path = require('path');
 var fs = require('fs');
@@ -19,18 +19,13 @@ var qs = require('querystring');
 
 var papi = require('../lib/papi');
 
-var cfg = path.resolve(__dirname, '../etc/config.json');
-var cfg_file = fs.existsSync(cfg) ? cfg :
+var cfgFile = path.resolve(__dirname, '../etc/config.json');
+cfgFile = fs.existsSync(cfgFile) ? cfgFile :
                path.resolve(__dirname, '../etc/config.test.json');
-var config = JSON.parse(fs.readFileSync(cfg_file, 'utf-8'));
-config.logger = {
-    streams: [ {
-        level: 'info',
-        stream: process.stdout
-    }]
-};
 
-var LOG =  new Logger({
+var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
+
+var LOG = new Logger({
     level: process.env.LOG_LEVEL || 'info',
     name: 'sdc-package-api-test',
     stream: process.stdout,
@@ -78,7 +73,7 @@ entry.urn = util.format('sdc:%s:%s:%s', entry.uuid, entry.name, entry.version);
 
 test('setup', function (t) {
     papi.createServer({
-        config: cfg_file,
+        config: cfgFile,
         log: LOG,
         overrides: {},
         test: true
@@ -461,5 +456,8 @@ test('teardown', function (t) {
     server.close(function () {
         backend.quit();
         t.end();
+
+        // hack until I figure out why process is hanging when tests complete
+        setTimeout(function () { process.exit(0); }, 200);
     });
 });

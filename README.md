@@ -45,7 +45,7 @@ Then, to run the tests, either:
 
 or, if you prefer some extra STDOUT info, go for the long version:
 
-    ./build/node/bin/node test/api.test.js 2>&1 | bunyan
+    ./build/node/bin/node test/*.test.js 2>&1 | bunyan
 
 
 # PENDING
