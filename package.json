@@ -13,7 +13,6 @@
     "backoff": "2.3.0",
     "moray": "git+ssh://git@git.joyent.com:node-moray.git#324ef396",
     "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#a7366a02",
-    "semver": "1.1.0",
     "ldapjs": "0.7.0",
     "vasync": "1.4.0",
     "clone": "0.1.6"

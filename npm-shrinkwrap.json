@@ -457,8 +457,8 @@
       }
     },
     "semver": {
-      "version": "1.1.0",
-      "from": "semver@1.1.0"
+      "version": "2.2.1",
+      "from": "semver@2.2.1"
     },
     "ldapjs": {
       "version": "0.7.0",
