@@ -426,11 +426,19 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
-        t.equivalent(pkg.owner_uuids, ownerUuids);
+
+        checkDate(t, pkg);
+
+        var newPkg = deepCopy(packages[0]);
+        newPkg.owner_uuids = ownerUuids;
+        t.equivalent(pkg, newPkg);
 
         client.get(url, function (err2, req2, res2, pkg2) {
             t.ifError(err2);
-            t.equivalent(pkg2.owner_uuids, ownerUuids);
+
+            checkDate(t, pkg2);
+            t.equivalent(pkg2, newPkg);
+
             t.end();
         });
     });
@@ -444,23 +452,36 @@ test('PUT /packages/:uuid (OK)', function (t) {
 
     client.put(url, {
         owner_uuids: ownerUuids
+//        common_name: null
     }, function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
+
         checkDate(t, pkg);
-        t.equivalent(pkg.owner_uuids, ownerUuids);
+
+        var newPkg = deepCopy(packages[0]);
+        newPkg.owner_uuids = ownerUuids;
+//        delete newPkg.common_name;
+        t.equivalent(pkg, newPkg);
 
         client.get(url, function (err2, req2, res2, pkg2) {
             t.ifError(err2);
-            t.equivalent(pkg2.owner_uuids, ownerUuids);
 
-//            client.put(url, {
-//                ownerUuids: null
-//            }, function (err, req, res, pkg) {
-//                t.equivalent(pkg.owner_uuids, null);
+            checkDate(t, pkg2);
+            t.equivalent(pkg2, newPkg);
+
+            client.put(url, {
+                owner_uuids: []
+            }, function (err3, req3, res3, pkg3) {
+                t.ifError(err3);
+
+                checkDate(t, pkg3);
+                delete newPkg.owner_uuids;
+                t.equivalent(pkg3, newPkg);
+
                 t.end();
-//            });
+            });
         });
     });
 });
@@ -503,7 +524,7 @@ test('DELETE /packages/:uuid (405)', function (t) {
 
 
 
-//test('GET /packages/:uuid (OK after failed DELETE)', checkPkg1);
+test('GET /packages/:uuid (OK after failed DELETE)', checkPkg1);
 
 
 
@@ -528,6 +549,7 @@ test('DELETE /packages/:uuid (404)', function (t) {
 
 test('DELETE /packages/:uuid (--force)', function (t) {
     var url = '/packages/' + packages[0].uuid;
+
     client.del(url + '?force=true', function (err, req, res) {
         t.ifError(err);
         t.equal(res.statusCode, 204);
@@ -662,4 +684,36 @@ function orderPkgs(a, b) {
     if (a.uuid < b.uuid)
         return 1;
     return -1;
+}
+
+
+
+/*
+ * Deep copies an object. This method assumes an acyclic graph.
+ */
+
+function deepCopy(obj) {
+    if (typeof (obj) !== 'object')
+        return obj;
+
+    if (obj === null)
+        return null;
+
+    var clone;
+
+    if (Array.isArray(obj)) {
+      clone = [];
+
+      for (var i = obj.length - 1; i >= 0; i--) {
+        clone[i] = deepCopy(obj[i]);
+      }
+    } else {
+      clone = {};
+
+      for (i in obj) {
+        clone[i] = deepCopy(obj[i]);
+      }
+    }
+
+    return clone;
 }
