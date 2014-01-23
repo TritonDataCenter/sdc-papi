@@ -250,8 +250,7 @@ function checkMutatedPkg2(t) {
             zfs_io_priority: 50
         };
 
-        t.ok(deepCompare(obj, expectedResults));
-        //t.equal(obj, expectedResults);
+        t.equivalent(obj, expectedResults);
 
         t.end();
     });
@@ -310,8 +309,7 @@ function checkPkg1(t) {
             zfs_io_priority: 100
         };
 
-        t.ok(deepCompare(obj, expectedResults));
-        //t.equal(obj, expectedResults);
+        t.equivalent(obj, expectedResults);
 
         t.end();
     });
@@ -347,8 +345,7 @@ function checkPkg2(t) {
             zfs_io_priority: 50
         };
 
-        t.ok(deepCompare(obj, expectedResults));
-        //t.equal(obj, expectedResults);
+        t.equivalent(obj, expectedResults);
 
         t.end();
     });
@@ -367,45 +364,4 @@ function checkPkg3(t) {
         t.equal(res.statusCode, 404);
         t.end();
     });
-}
-
-
-
-/*
- * Deep compares two objects. This assumes an acyclic graph.
- *
- * We're use this because t.equal() is broken in some regards.
- */
-
-function deepCompare(obj1, obj2) {
-    var type = typeof (obj1);
-    if (typeof (obj2) !== type)
-        return false;
-
-    if (type === 'object') {
-        if (obj1 === null)
-            return obj2 === null;
-
-        // for some reason obj instanceof Array doesn't work here
-        if (Array.isArray(obj1)) {
-            for (var i = obj1.length - 1; i >= 0; i--) {
-                if (!deepCompare(obj1[i], obj2[i]))
-                    return false;
-            }
-
-        } else {
-            if (Object.keys(obj1).length !== Object.keys(obj2).length)
-                return false;
-
-            for (i in obj1) {
-                if (!deepCompare(obj1[i], obj2[i]))
-                    return false;
-            }
-        }
-
-        return true;
-
-    } else {
-        return obj1 === obj2;
-    }
 }
