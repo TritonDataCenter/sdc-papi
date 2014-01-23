@@ -23,7 +23,7 @@ var IMPORTER_PATH    = path.resolve(__dirname, '../bin/importer');
 
 
 
-var server, client, backend, cfgPath;
+var server, client, backend, cfgPath, startTime;
 
 
 
@@ -60,7 +60,10 @@ test('setup', function (t) {
             }
         });
 
-        t.ok(client, 'client ok');
+        t.ok(client);
+
+        startTime = +new Date();
+
         t.end();
     });
 });
@@ -228,13 +231,7 @@ function checkMutatedPkg2(t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
 
-        var now = +new Date();
-        var created = +new Date(obj.created_at);
-        var updated = +new Date(obj.updated_at);
-        t.ok(now - created < 1000);
-        t.ok(now - updated < 1000);
-        delete obj.created_at;
-        delete obj.updated_at;
+        checkDate(t, obj);
 
         var expectedResults = {
             active: false,
@@ -264,13 +261,7 @@ function checkPkg1(t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
 
-        var now = +new Date();
-        var created = +new Date(obj.created_at);
-        var updated = +new Date(obj.updated_at);
-        t.ok(now - created < 1000);
-        t.ok(now - updated < 1000);
-        delete obj.created_at;
-        delete obj.updated_at;
+        checkDate(t, obj);
 
         var expectedResults = {
             active: true,
@@ -323,13 +314,7 @@ function checkPkg2(t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
 
-        var now = +new Date();
-        var created = +new Date(obj.created_at);
-        var updated = +new Date(obj.updated_at);
-        t.ok(now - created < 1000);
-        t.ok(now - updated < 1000);
-        delete obj.created_at;
-        delete obj.updated_at;
+        checkDate(t, obj);
 
         var expectedResults = {
             active: false,
@@ -364,4 +349,19 @@ function checkPkg3(t) {
         t.equal(res.statusCode, 404);
         t.end();
     });
+}
+
+
+
+function checkDate(t, pkg) {
+    var allowedDelta = 5000;
+
+    var created = +new Date(pkg.created_at);
+    var updated = +new Date(pkg.updated_at);
+
+    t.ok(created - startTime < allowedDelta);
+    t.ok(updated - startTime < allowedDelta);
+
+    delete pkg.created_at;
+    delete pkg.updated_at;
 }
