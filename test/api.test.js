@@ -24,11 +24,11 @@ cfgFile = fs.existsSync(cfgFile) ? cfgFile :
 
 var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
 
-var entry = {
+var packages = [ {
     uuid: '27543bf3-0c66-4f61-9ae4-7dda5cb4741b',
-    name: 'regular_128',
+    name: 'api_test_128',
     version: '1.0.0',
-    urn: 'sdc:27543bf3-0c66-4f61-9ae4-7dda5cb4741b:regular_128:1.0.0',
+    urn: 'sdc:27543bf3-0c66-4f61-9ae4-7dda5cb4741b:api_test_128:1.0.0',
     os: 'smartos',
     max_physical_memory: 128,
     quota: 5120,
@@ -37,7 +37,7 @@ var entry = {
     cpu_burst_ratio: 0.5,
     max_lwps: 2000,
     zfs_io_priority: 1,
-    'default': true,
+    default: true,
     vcpus: 1,
     active: true,
     networks: [
@@ -51,15 +51,18 @@ var entry = {
     },
     group: 'ramones',
     description: 'This is a package description, and should be present',
-    common_name: 'Regular 128MiB',
+    common_name: 'API Test 128MiB',
     fss: 25,
-    billing_tag: 'Regular128MiB'
-};
+    billing_tag: 'ApiTest128MiB'
+}, {
+    uuid: '43cedda8-f844-4a62-956a-85691fa21b36'
+}, {
+    uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124'
+} ];
 
 
 
-var server, client, backend;
-var PACKAGE;
+var server, client, backend, startTime;
 
 
 
@@ -92,19 +95,27 @@ test('setup', function (t) {
             }
         });
 
-        t.ok(client, 'client ok');
+        t.ok(client);
+
+        startTime = +new Date();
+
         t.end();
     });
 });
 
 
 
+test('Clean up stale state (before)', cleanUp);
+test('Check no stale packages (before)', checkNoPkgs);
+
+
+
 test('GET /packages', function (t) {
-    client.get('/packages', function (err, req, res, obj) {
+    client.get('/packages', function (err, req, res, pkgs) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(res.headers['x-resource-count']);
-        t.ok(Array.isArray(obj));
+        t.ok(Array.isArray(pkgs));
         t.end();
     });
 });
@@ -112,25 +123,13 @@ test('GET /packages', function (t) {
 
 
 test('POST /packages (OK)', function (t) {
-    client.post('/packages', entry, function (err, req, res, pkg) {
+    client.post('/packages', packages[0], function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 201);
-        t.ok(pkg);
-        t.ok(pkg.uuid);
-        t.equal(pkg.os, 'smartos');
-        t.equal(pkg.vcpus, 1);
-        t.equal(pkg.cpu_burst_ratio, 0.5);
-        t.equal(pkg.max_swap, 256);
-        t.equal(pkg.traits.bool, true);
-        t.ok(Array.isArray(pkg.networks));
-        t.equal(pkg.networks.length, 2);
-        t.equivalent(pkg.traits.arr, ['one', 'two', 'three']);
-        t.equal(pkg.traits.str, 'a string');
-        t.ok(pkg.created_at);
-        t.ok(pkg.updated_at);
-        t.equal('string', typeof (pkg.created_at));
-        t.ok(pkg.billing_tag);
-        PACKAGE = pkg;
+
+        checkDate(t, pkg);
+        t.equivalent(packages[0], pkg);
+
         t.end();
     });
 });
@@ -155,7 +154,8 @@ test('POST /packages (missing required fields)', function (t) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
-        t.equal(err.message,
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message,
                 /* BEGIN JSSTYLED */
                 "'active' is missing, 'cpu_cap' is missing, " +
                 "'default' is missing, 'max_lwps' is missing, " +
@@ -203,7 +203,8 @@ test('POST /packages (fields validation failed)', function (t) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
-        t.equal(err.message,
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message,
                 /* BEGIN JSSTYLED */
                 "'networks': '[\"aefd7d3c-a4fd-4812-9dd7-24733974d861\"," +
                 "\"de749393-836c-42ce-9c7b-\"]' is invalid (contains " +
@@ -221,36 +222,38 @@ test('POST /packages (fields validation failed)', function (t) {
 
 
 test('POST /packages (duplicated unique field)', function (t) {
-    client.post('/packages', entry, function (err, req, res, pkg) {
+    client.post('/packages', packages[0], function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
-        t.ok(/already exist/.test(err.message));
+
+        var expected = {
+            code: 'ConflictError',
+            message: 'A package with the given UUID already exists'
+        };
+
+        t.equivalent(err.body, expected);
         t.end();
     });
 });
 
 
 
-test('GET /packages/:uuid (OK)', function (t) {
-    client.get('/packages/' + PACKAGE.uuid, function (err, req, res, pkg) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.ok(pkg);
-        t.equal(pkg.created_at, PACKAGE.created_at);
-        t.equal(pkg.updated_at, PACKAGE.updated_at);
-        t.equal(pkg.urn, PACKAGE.urn);
-        t.ok(pkg.billing_tag);
-        t.end();
-    });
-});
+test('GET /packages/:uuid (OK)', checkPkg1);
 
 
 
 test('GET /packages/:uuid (404)', function (t) {
-    client.get('/packages/' + uuid(), function (err, req, res, pkg) {
-        t.ok(err);
+    var badUuid = uuid();
+
+    client.get('/packages/' + badUuid, function (err, req, res, pkg) {
         t.equal(res.statusCode, 404);
-        t.ok(/does not exist/.test(err.message));
+
+        var expected = {
+            code: 'ResourceNotFound',
+            message: 'Package ' + badUuid + ' does not exist'
+        };
+
+        t.equivalent(err.body, expected);
         t.end();
     });
 });
@@ -258,15 +261,15 @@ test('GET /packages/:uuid (404)', function (t) {
 
 
 test('GET /packages (Search by owner_uuid)', function (t) {
-    var q = '/packages?owner_uuid=' + config.ufds_admin_uuid;
+    var query = '/packages?owner_uuid=' + config.ufds_admin_uuid;
 
-    client.get(q, function (err, req, res, obj) {
+    client.get(query, function (err, req, res, pkgs) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(res.headers['x-resource-count']);
-        t.ok(Array.isArray(obj));
+        t.ok(Array.isArray(pkgs));
 
-        obj.forEach(function (p) {
+        pkgs.forEach(function (p) {
             t.ok(typeof (p.owner_uuids) === 'undefined' ||
                 p.owner_uuids[0] === config.ufds_admin_uuid);
         });
@@ -278,75 +281,73 @@ test('GET /packages (Search by owner_uuid)', function (t) {
 
 
 test('GET /packages (Search by group)', function (t) {
-    var q = '/packages?group=ramones';
+    var query = '/packages?group=ramones';
 
-    client.get(q, function (err, req, res, obj) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.ok(res.headers['x-resource-count']);
-        t.ok(Array.isArray(obj));
-        t.ok(obj.length);
-        t.equal(obj[0].group, 'ramones');
-        t.end();
-    });
+    var testFilter = function (p) {
+        return p.group === 'ramones';
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
 });
 
 
 
-test('GET /packages (Search by name)', function (t) {
-    var q = '/packages?name=regular_128';
 
-    client.get(q, function (err, req, res, obj) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.ok(res.headers['x-resource-count']);
-        t.ok(Array.isArray(obj));
-        t.ok(obj.length);
-        t.equal(obj[0].max_physical_memory, 128);
-        t.end();
-    });
+
+test('GET /packages (Search by name)', function (t) {
+    var query = '/packages?name=api_test_128';
+
+    var testFilter = function (p) {
+        return p.name === 'api_test_128';
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
 });
 
 
 
 test('GET /packages (Search by multiple fields)', function (t) {
-    var q = '/packages?name=regular_128&owner_uuid=' + uuid();
+    var query = '/packages?name=api_test_128&owner_uuid=' + uuid();
 
-    client.get(q, function (err, req, res, obj) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.ok(res.headers['x-resource-count']);
-        t.ok(Array.isArray(obj));
-        t.equal(obj.length, 1);
-        t.end();
-    });
+    var testFilter = function (p) {
+        return p.name === 'api_test_128' && !p.owner_uuids;
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
 });
 
 
 
 test('GET /packages (Custom filter)', function (t) {
-    var query = qs.escape('(&(max_physical_memory>=64)(zfs_io_priority=1))');
-    var q = '/packages?filter=' + query;
+    var filter = '(&(name=api_test*)(max_physical_memory>=64)' +
+                 '(zfs_io_priority=1))';
+    var query = '/packages?filter=' + qs.escape(filter);
 
-    client.get(q, function (err, req, res, obj) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.ok(res.headers['x-resource-count']);
-        t.ok(Array.isArray(obj));
-        t.ok(obj.length);
-        t.end();
-    });
+    var testFilter = function (p) {
+        return /^api/.test(p.name) &&
+               p.max_physical_memory >= 64 &&
+               p.zfs_io_priority === 1;
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
 });
 
 
 
 test('GET /packages (Custom invalid filter)', function (t) {
-    var query = qs.escape('(&(max_physical_memory>=64)zfs_io_priority=1)');
-    var q = '/packages?filter=' + query;
+    // intentionally missing a '('
+    var filter = '(&(max_physical_memory>=64)zfs_io_priority=1)';
+    var query = '/packages?filter=' + qs.escape(filter);
 
-    client.get(q, function (err, req, res, obj) {
-        t.equal(res.statusCode, 409, 'status code (409)');
-        t.equal(err.message, 'Provided search filter is not valid');
+    client.get(query, function (err, req, res, _) {
+        t.equal(res.statusCode, 409);
+
+        var expected = {
+            code: 'InvalidArgument',
+            message: 'Provided search filter is not valid'
+        };
+
+        t.equivalent(err.body, expected);
         t.end();
     });
 });
@@ -367,12 +368,13 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
         'vcpus': 4
     };
 
-    client.put('/packages/' + PACKAGE.uuid, immutable,
+    client.put('/packages/' + packages[0].uuid, immutable,
         function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
-        t.equal(err.message,
+        t.equal(err.body.code, 'ConflictError');
+        t.equal(err.body.message,
                 /* BEGIN JSSTYLED */
                 "'cpu_cap' is immutable, 'max_lwps' is immutable, " +
                 "'max_physical_memory' is immutable, 'max_swap' is immutable, "+
@@ -386,14 +388,19 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
 
 
 
+test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
+
+
+
 test('PUT /packages/:uuid (validation failed)', function (t) {
-    client.put('/packages/' + PACKAGE.uuid, {
+    client.put('/packages/' + packages[0].uuid, {
         owner_uuids: ['this-is-not-a-valid-uuid']
     }, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
-        t.equal(err.message,
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message,
                 /* BEGIN JSSTYLED */
                 "'owner_uuids': '[\"this-is-not-a-valid-uuid\"]' is invalid " +
                 "(contains non-UUID items)");
@@ -404,46 +411,75 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
 
 
 
+test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
+
+
+
 test('PUT /packages/:uuid (skip-validation)', function (t) {
-    client.put('/packages/' + PACKAGE.uuid, {
-        owner_uuids: ['this-is-not-a-valid-uuid'],
+    var url = '/packages/' + packages[0].uuid;
+    var ownerUuids = ['this-is-not-a-valid-uuid'];
+
+    client.put(url, {
+        owner_uuids: ownerUuids,
         skip_validation: true
     }, function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
-        t.equal(pkg.owner_uuids[0], 'this-is-not-a-valid-uuid');
-        t.equal(pkg.owner_uuids.length, 1);
-        t.end();
+        t.equivalent(pkg.owner_uuids, ownerUuids);
+
+        client.get(url, function (err2, req2, res2, pkg2) {
+            t.ifError(err2);
+            t.equivalent(pkg2.owner_uuids, ownerUuids);
+            t.end();
+        });
     });
 });
 
 
 
 test('PUT /packages/:uuid (OK)', function (t) {
-    client.put('/packages/' + PACKAGE.uuid, {
-        owner_uuids: [config.ufds_admin_uuid]
+    var url = '/packages/' + packages[0].uuid;
+    var ownerUuids = [config.ufds_admin_uuid];
+
+    client.put(url, {
+        owner_uuids: ownerUuids
     }, function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(pkg);
-        t.ok(pkg.updated_at);
-        t.equal('string', typeof (pkg.updated_at));
-        t.equal(pkg.created_at, PACKAGE.created_at);
-        t.notEqual(pkg.updated_at, PACKAGE.updated_at);
-        t.equal(pkg.owner_uuids[0], config.ufds_admin_uuid);
-        t.equal(pkg.owner_uuids.length, 1);
-        t.end();
+        checkDate(t, pkg);
+        t.equivalent(pkg.owner_uuids, ownerUuids);
+
+        client.get(url, function (err2, req2, res2, pkg2) {
+            t.ifError(err2);
+            t.equivalent(pkg2.owner_uuids, ownerUuids);
+
+//            client.put(url, {
+//                ownerUuids: null
+//            }, function (err, req, res, pkg) {
+//                t.equivalent(pkg.owner_uuids, null);
+                t.end();
+//            });
+        });
     });
 });
 
 
 
 test('PUT /packages/:uuid (404)', function (t) {
-    client.put('/packages/' + uuid(), {}, function (err, req, res, pkg) {
+    var badUuid = uuid();
+
+    client.put('/packages/' + badUuid, {}, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 404);
-        t.ok(/does not exist/.test(err.message));
+
+        var expected = {
+            code: 'ResourceNotFound',
+            message: 'Package ' + badUuid + ' does not exist'
+        };
+
+        t.equivalent(err.body, expected);
         t.end();
     });
 });
@@ -451,21 +487,39 @@ test('PUT /packages/:uuid (404)', function (t) {
 
 
 test('DELETE /packages/:uuid (405)', function (t) {
-    client.del('/packages/' + PACKAGE.uuid, function (err, req, res) {
+    client.del('/packages/' + packages[0].uuid, function (err, req, res) {
         t.ok(err);
         t.equal(res.statusCode, 405);
-        t.equal('Packages cannot be deleted', err.message);
+
+        var expected = {
+            code: 'BadMethod',
+            message: 'Packages cannot be deleted'
+        };
+
+        t.equivalent(err.body, expected);
         t.end();
     });
 });
 
 
 
+//test('GET /packages/:uuid (OK after failed DELETE)', checkPkg1);
+
+
+
 test('DELETE /packages/:uuid (404)', function (t) {
-    client.del('/packages/' + uuid(), function (err, req, res) {
+    var badUuid = uuid();
+
+    client.del('/packages/' + badUuid, function (err, req, res) {
         t.ok(err);
         t.equal(res.statusCode, 404);
-        t.ok(/does not exist/.test(err.message));
+
+        var expected = {
+            code: 'ResourceNotFound',
+            message: 'Package ' + badUuid + ' does not exist'
+        };
+
+        t.equivalent(err.body, expected);
         t.end();
     });
 });
@@ -473,13 +527,22 @@ test('DELETE /packages/:uuid (404)', function (t) {
 
 
 test('DELETE /packages/:uuid (--force)', function (t) {
-    client.del('/packages/' + PACKAGE.uuid + '?force=true',
-        function (err, req, res) {
+    var url = '/packages/' + packages[0].uuid;
+    client.del(url + '?force=true', function (err, req, res) {
         t.ifError(err);
         t.equal(res.statusCode, 204);
-        t.end();
+
+        client.get(url, function (err2, req2, res2) {
+            t.equal(err2.statusCode, 404);
+            t.end();
+        });
     });
 });
+
+
+
+test('Clean up stale state (after)', cleanUp);
+test('Check no stale packages (after)', checkNoPkgs);
 
 
 
@@ -496,6 +559,107 @@ test('teardown', function (t) {
 
 
 
+function cleanUp(t) {
+    var deletePkgs = packages.map(function (p) { return p.uuid; });
+
+    var deletePkg = function () {
+        var pkgUuid = deletePkgs.pop();
+        var url = '/packages/' + pkgUuid + '?force=true';
+
+        client.del(url, function (err, req, res, obj) {
+            if (err && err.statusCode !== 404)
+                t.ifError(err);
+
+            if (deletePkgs.length > 0)
+                return deletePkg();
+
+            return t.end();
+        });
+    };
+
+    deletePkg();
+}
+
+
+
+function checkNoPkgs(t) {
+    var checkPkgs = packages.map(function (p) { return p.uuid; });
+
+    var checkPkg = function () {
+        var pkgUuid = checkPkgs.pop();
+        var url = '/packages/' + pkgUuid;
+
+        client.get(url, function (err, req, res, obj) {
+            t.equal(err.statusCode, 404);
+
+            if (checkPkgs.length > 0)
+                return checkPkg();
+
+            return t.end();
+        });
+    };
+
+    checkPkg();
+}
+
+
+
+function checkDate(t, pkg) {
+    var allowedDelta = 5000;
+
+    var created = +new Date(pkg.created_at);
+    var updated = +new Date(pkg.updated_at);
+
+    t.ok(created - startTime < allowedDelta);
+    t.ok(updated - startTime < allowedDelta);
+
+    delete pkg.created_at;
+    delete pkg.updated_at;
+}
+
+
+
+function searchAndCheckPkgs(t, query, testFilter) {
+    client.get(query, function (err, req, res, pkgs) {
+        t.ifError(err);
+
+        t.equal(res.statusCode, 200);
+        t.ok(Array.isArray(pkgs));
+
+        var expectedPkgs = packages.filter(testFilter);
+
+        pkgs.forEach(function (p) { checkDate(t, p); });
+        t.equal(+res.headers['x-resource-count'], expectedPkgs.length);
+        t.equivalent(pkgs.sort(orderPkgs), expectedPkgs.sort(orderPkgs));
+
+        t.end();
+    });
+}
+
+
+
+function checkPkg1(t) {
+    client.get('/packages/' + packages[0].uuid, function (err, req, res, pkg) {
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+
+        checkDate(t, pkg);
+        t.equivalent(packages[0], pkg);
+
+        t.end();
+    });
+}
+
+
+
 function uuid() {
     return libuuid.create();
+}
+
+
+
+function orderPkgs(a, b) {
+    if (a.uuid < b.uuid)
+        return 1;
+    return -1;
 }
