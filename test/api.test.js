@@ -5,19 +5,18 @@
  */
 
 
-var test = require('tap').test;
+var fs      = require('fs');
+var path    = require('path');
+var qs      = require('querystring');
 var restify = require('restify');
-var Logger = require('bunyan');
+var test    = require('tap').test;
+var util    = require('util');
+var Logger  = require('bunyan');
 var libuuid = require('libuuid');
-function uuid() {
-    return (libuuid.create());
-}
-var util = require('util');
-var path = require('path');
-var fs = require('fs');
-var qs = require('querystring');
 
 var papi = require('../lib/papi');
+
+
 
 var cfgFile = path.resolve(__dirname, '../etc/config.json');
 cfgFile = fs.existsSync(cfgFile) ? cfgFile :
@@ -25,22 +24,11 @@ cfgFile = fs.existsSync(cfgFile) ? cfgFile :
 
 var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
 
-var LOG = new Logger({
-    level: process.env.LOG_LEVEL || 'info',
-    name: 'sdc-package-api-test',
-    stream: process.stdout,
-    serializers: restify.bunyan.serializers
-});
-
-
-var server, client, backend;
-
-var PACKAGE;
-
-
 var entry = {
+    uuid: '27543bf3-0c66-4f61-9ae4-7dda5cb4741b',
     name: 'regular_128',
     version: '1.0.0',
+    urn: 'sdc:27543bf3-0c66-4f61-9ae4-7dda5cb4741b:regular_128:1.0.0',
     os: 'smartos',
     max_physical_memory: 128,
     quota: 5120,
@@ -62,26 +50,39 @@ var entry = {
         str: 'a string'
     },
     group: 'ramones',
-    uuid: uuid(),
     description: 'This is a package description, and should be present',
     common_name: 'Regular 128MiB',
     fss: 25,
     billing_tag: 'Regular128MiB'
 };
 
-entry.urn = util.format('sdc:%s:%s:%s', entry.uuid, entry.name, entry.version);
+
+
+var server, client, backend;
+var PACKAGE;
+
+
 
 test('setup', function (t) {
+    var log = new Logger({
+        level: process.env.LOG_LEVEL || 'info',
+        name: 'sdc-package-api-test',
+        stream: process.stdout,
+        serializers: restify.bunyan.serializers
+    });
+
     papi.createServer({
         config: cfgFile,
-        log: LOG,
+        log: log,
         overrides: {},
         test: true
     }, function (err, s) {
-        t.ok(s, 'server ok');
-        t.ok(s.backend, 'server backend ok');
-        server = s;
-        backend = s.backend;
+        server  = s;
+        backend = server.backend;
+
+        t.ok(server);
+        t.ok(backend);
+
         client = restify.createJsonClient({
             log: s.log,
             url: 'http://127.0.0.1:' + config.port,
@@ -90,26 +91,29 @@ test('setup', function (t) {
                 retry: 0
             }
         });
+
         t.ok(client, 'client ok');
         t.end();
     });
 });
 
 
+
 test('GET /packages', function (t) {
     client.get('/packages', function (err, req, res, obj) {
-        t.ifError(err, 'GET /packages error');
-        t.equal(res.statusCode, 200, 'status code (200 OK)');
-        t.ok(res.headers['x-resource-count'], 'x-resource-count');
-        t.ok(Array.isArray(obj), 'Packages list');
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(res.headers['x-resource-count']);
+        t.ok(Array.isArray(obj));
         t.end();
     });
 });
 
 
+
 test('POST /packages (OK)', function (t) {
     client.post('/packages', entry, function (err, req, res, pkg) {
-        t.ifError(err, 'POST /packages error');
+        t.ifError(err);
         t.equal(res.statusCode, 201);
         t.ok(pkg);
         t.ok(pkg.uuid);
@@ -132,8 +136,9 @@ test('POST /packages (OK)', function (t) {
 });
 
 
+
 test('POST /packages (missing required fields)', function (t) {
-    var p = {
+    var pkg = {
         vcpus: 1,
         networks: [
             'aefd7d3c-a4fd-4812-9dd7-24733974d861',
@@ -145,7 +150,8 @@ test('POST /packages (missing required fields)', function (t) {
             str: 'a string'
         }
     };
-    client.post('/packages', p, function (err, req, res, pkg) {
+
+    client.post('/packages', pkg, function (err, req, res, _) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -157,14 +163,14 @@ test('POST /packages (missing required fields)', function (t) {
                 "'name' is missing, 'quota' is missing, " +
                 "'version' is missing, 'zfs_io_priority' is missing");
                 /* END JSSTYLED */
-
         t.end();
     });
 });
 
 
+
 test('POST /packages (fields validation failed)', function (t) {
-    var p = {
+    var pkg = {
         name: 'regular_128',
         version: '1.0.0',
         os: 2,
@@ -192,9 +198,11 @@ test('POST /packages (fields validation failed)', function (t) {
         common_name: 'Regular 128MiB',
         fss: 25
     };
-    client.post('/packages', p, function (err, req, res, pkg) {
+
+    client.post('/packages', pkg, function (err, req, res, _) {
         t.ok(err);
         t.equal(res.statusCode, 409);
+
         t.equal(err.message,
                 /* BEGIN JSSTYLED */
                 "'networks': '[\"aefd7d3c-a4fd-4812-9dd7-24733974d861\"," +
@@ -211,6 +219,7 @@ test('POST /packages (fields validation failed)', function (t) {
 });
 
 
+
 test('POST /packages (duplicated unique field)', function (t) {
     client.post('/packages', entry, function (err, req, res, pkg) {
         t.ok(err);
@@ -219,6 +228,7 @@ test('POST /packages (duplicated unique field)', function (t) {
         t.end();
     });
 });
+
 
 
 test('GET /packages/:uuid (OK)', function (t) {
@@ -235,6 +245,7 @@ test('GET /packages/:uuid (OK)', function (t) {
 });
 
 
+
 test('GET /packages/:uuid (404)', function (t) {
     client.get('/packages/' + uuid(), function (err, req, res, pkg) {
         t.ok(err);
@@ -245,29 +256,35 @@ test('GET /packages/:uuid (404)', function (t) {
 });
 
 
+
 test('GET /packages (Search by owner_uuid)', function (t) {
     var q = '/packages?owner_uuid=' + config.ufds_admin_uuid;
+
     client.get(q, function (err, req, res, obj) {
-        t.ifError(err, 'GET /packages error');
-        t.equal(res.statusCode, 200, 'status code (200 OK)');
-        t.ok(res.headers['x-resource-count'], 'x-resource-count');
-        t.ok(Array.isArray(obj), 'Packages list');
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(res.headers['x-resource-count']);
+        t.ok(Array.isArray(obj));
+
         obj.forEach(function (p) {
             t.ok(typeof (p.owner_uuids) === 'undefined' ||
                 p.owner_uuids[0] === config.ufds_admin_uuid);
         });
+
         t.end();
     });
 });
 
 
+
 test('GET /packages (Search by group)', function (t) {
     var q = '/packages?group=ramones';
+
     client.get(q, function (err, req, res, obj) {
-        t.ifError(err, 'GET /packages error');
-        t.equal(res.statusCode, 200, 'status code (200 OK)');
-        t.ok(res.headers['x-resource-count'], 'x-resource-count');
-        t.ok(Array.isArray(obj), 'Packages list');
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(res.headers['x-resource-count']);
+        t.ok(Array.isArray(obj));
         t.ok(obj.length);
         t.equal(obj[0].group, 'ramones');
         t.end();
@@ -275,13 +292,15 @@ test('GET /packages (Search by group)', function (t) {
 });
 
 
+
 test('GET /packages (Search by name)', function (t) {
     var q = '/packages?name=regular_128';
+
     client.get(q, function (err, req, res, obj) {
-        t.ifError(err, 'GET /packages error');
-        t.equal(res.statusCode, 200, 'status code (200 OK)');
-        t.ok(res.headers['x-resource-count'], 'x-resource-count');
-        t.ok(Array.isArray(obj), 'Packages list');
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(res.headers['x-resource-count']);
+        t.ok(Array.isArray(obj));
         t.ok(obj.length);
         t.equal(obj[0].max_physical_memory, 128);
         t.end();
@@ -289,38 +308,42 @@ test('GET /packages (Search by name)', function (t) {
 });
 
 
+
 test('GET /packages (Search by multiple fields)', function (t) {
     var q = '/packages?name=regular_128&owner_uuid=' + uuid();
+
     client.get(q, function (err, req, res, obj) {
-        t.ifError(err, 'GET /packages error');
-        t.equal(res.statusCode, 200, 'status code (200 OK)');
-        t.ok(res.headers['x-resource-count'], 'x-resource-count');
-        t.ok(Array.isArray(obj), 'Packages list');
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(res.headers['x-resource-count']);
+        t.ok(Array.isArray(obj));
         t.equal(obj.length, 1);
         t.end();
     });
 });
 
 
+
 test('GET /packages (Custom filter)', function (t) {
-    var query = qs.escape('(&(max_physical_memory>=64)' +
-            '(zfs_io_priority=1))');
+    var query = qs.escape('(&(max_physical_memory>=64)(zfs_io_priority=1))');
     var q = '/packages?filter=' + query;
+
     client.get(q, function (err, req, res, obj) {
-        t.ifError(err, 'GET /packages error');
-        t.equal(res.statusCode, 200, 'status code (200 OK)');
-        t.ok(res.headers['x-resource-count'], 'x-resource-count');
-        t.ok(Array.isArray(obj), 'Packages list');
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(res.headers['x-resource-count']);
+        t.ok(Array.isArray(obj));
         t.ok(obj.length);
         t.end();
     });
 });
 
 
+
 test('GET /packages (Custom invalid filter)', function (t) {
-    var query = qs.escape('(&(max_physical_memory>=64)' +
-            'zfs_io_priority=1)');
+    var query = qs.escape('(&(max_physical_memory>=64)zfs_io_priority=1)');
     var q = '/packages?filter=' + query;
+
     client.get(q, function (err, req, res, obj) {
         t.equal(res.statusCode, 409, 'status code (409)');
         t.equal(err.message, 'Provided search filter is not valid');
@@ -362,12 +385,14 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
 });
 
 
+
 test('PUT /packages/:uuid (validation failed)', function (t) {
     client.put('/packages/' + PACKAGE.uuid, {
         owner_uuids: ['this-is-not-a-valid-uuid']
     }, function (err, req, res, pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
+
         t.equal(err.message,
                 /* BEGIN JSSTYLED */
                 "'owner_uuids': '[\"this-is-not-a-valid-uuid\"]' is invalid " +
@@ -376,6 +401,7 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
         t.end();
     });
 });
+
 
 
 test('PUT /packages/:uuid (skip-validation)', function (t) {
@@ -391,6 +417,7 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
         t.end();
     });
 });
+
 
 
 test('PUT /packages/:uuid (OK)', function (t) {
@@ -411,6 +438,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
 });
 
 
+
 test('PUT /packages/:uuid (404)', function (t) {
     client.put('/packages/' + uuid(), {}, function (err, req, res, pkg) {
         t.ok(err);
@@ -419,6 +447,7 @@ test('PUT /packages/:uuid (404)', function (t) {
         t.end();
     });
 });
+
 
 
 test('DELETE /packages/:uuid (405)', function (t) {
@@ -431,6 +460,7 @@ test('DELETE /packages/:uuid (405)', function (t) {
 });
 
 
+
 test('DELETE /packages/:uuid (404)', function (t) {
     client.del('/packages/' + uuid(), function (err, req, res) {
         t.ok(err);
@@ -439,6 +469,7 @@ test('DELETE /packages/:uuid (404)', function (t) {
         t.end();
     });
 });
+
 
 
 test('DELETE /packages/:uuid (--force)', function (t) {
@@ -451,6 +482,7 @@ test('DELETE /packages/:uuid (--force)', function (t) {
 });
 
 
+
 test('teardown', function (t) {
     client.close();
     server.close(function () {
@@ -461,3 +493,9 @@ test('teardown', function (t) {
         setTimeout(function () { process.exit(0); }, 200);
     });
 });
+
+
+
+function uuid() {
+    return libuuid.create();
+}
