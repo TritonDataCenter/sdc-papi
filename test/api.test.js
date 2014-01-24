@@ -55,9 +55,34 @@ var packages = [ {
     fss: 25,
     billing_tag: 'ApiTest128MiB'
 }, {
-    uuid: '43cedda8-f844-4a62-956a-85691fa21b36'
+    uuid: '43cedda8-f844-4a62-956a-85691fa21b36',
+    name: 'api_test_2048',
+    version: '1.0.1',
+    active: false,
+    cpu_cap: 300,
+    default: true,
+    max_lwps: 2000,
+    max_physical_memory: 2048,
+    max_swap: 4096,
+    quota: 81920,
+    zfs_io_priority: 50,
+    owner_uuids: ['7f5501af-12da-4727-8579-625e527ed1f2']
 }, {
-    uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124'
+    uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124',
+    name: 'api_test_512',
+    version: '1.0.1',
+    active: true,
+    cpu_cap: 300,
+    default: false,
+    max_lwps: 1000,
+    max_physical_memory: 512,
+    max_swap: 1024,
+    quota: 10240,
+    zfs_io_priority: 100,
+    owner_uuids: [
+        '7f5501af-12da-4727-8579-625e527ed1f2',
+        'c39b6d6a-1c11-4d1b-b213-174974d71b45'
+    ]
 } ];
 
 
@@ -123,15 +148,37 @@ test('GET /packages', function (t) {
 
 
 test('POST /packages (OK)', function (t) {
-    client.post('/packages', packages[0], function (err, req, res, pkg) {
-        t.ifError(err);
-        t.equal(res.statusCode, 201);
+    var postPkgs = packages.slice();
 
-        checkDate(t, pkg);
-        t.equivalent(packages[0], pkg);
+    var postPkg = function () {
+        var newPkg = postPkgs.pop();
 
-        t.end();
-    });
+        client.post('/packages', newPkg, function (err, req, res, storedPkg) {
+            t.ifError(err);
+            t.equal(res.statusCode, 201);
+
+            checkDate(t, storedPkg);
+            t.equivalent(newPkg, storedPkg);
+
+            var location = res.headers['location'];
+            t.equal(location, '/packages/' + newPkg.uuid);
+
+            client.get(location, function (err2, req2, res2, storedPkg2) {
+                t.ifError(err2);
+                t.equal(res2.statusCode, 200);
+
+                checkDate(t, storedPkg2);
+                t.equivalent(newPkg, storedPkg2);
+
+                if (postPkgs.length > 0)
+                    return postPkg();
+
+                return t.end();
+            });
+        });
+    };
+
+    postPkg();
 });
 
 
@@ -260,18 +307,19 @@ test('GET /packages/:uuid (404)', function (t) {
 
 
 
-test('GET /packages (Search by owner_uuid)', function (t) {
-    var query = '/packages?owner_uuid=' + config.ufds_admin_uuid;
+test('GET /packages (Search by owner_uuids)', function (t) {
+    var query = '/packages?owner_uuids=' + config.ufds_admin_uuid;
 
     client.get(query, function (err, req, res, pkgs) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
         t.ok(res.headers['x-resource-count']);
         t.ok(Array.isArray(pkgs));
+        t.ok(pkgs.length > 1);
 
         pkgs.forEach(function (p) {
-            t.ok(typeof (p.owner_uuids) === 'undefined' ||
-                p.owner_uuids[0] === config.ufds_admin_uuid);
+            t.ok(p.owner_uuids === undefined ||
+                 p.owner_uuids.indexOf(config.ufds_admin_uuid) !== -1);
         });
 
         t.end();
@@ -292,6 +340,20 @@ test('GET /packages (Search by group)', function (t) {
 
 
 
+test('GET /packages (Search by networks)', function (t) {
+    var network = packages[0].networks[1];
+    var query = '/packages?networks=' + network;
+
+    var testFilter = function (p) {
+        if (!p.networks)
+            return false;
+
+        return p.networks.indexOf(network) !== -1;
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
 
 
 test('GET /packages (Search by name)', function (t) {
@@ -306,11 +368,23 @@ test('GET /packages (Search by name)', function (t) {
 
 
 
-test('GET /packages (Search by multiple fields)', function (t) {
-    var query = '/packages?name=api_test_128&owner_uuid=' + uuid();
+test('GET /packages (Search by wildcard)', function (t) {
+    var query = '/packages?name=api_test_*';
 
     var testFilter = function (p) {
-        return p.name === 'api_test_128' && !p.owner_uuids;
+        return /^api_test_/.test(p.name);
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
+test('GET /packages (Search by multiple fields)', function (t) {
+    var query = '/packages?name=api_test_*&owner_uuids=' + uuid();
+
+    var testFilter = function (p) {
+        return /^api_test_/.test(p.name) && !p.owner_uuids;
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -348,6 +422,42 @@ test('GET /packages (Custom invalid filter)', function (t) {
         };
 
         t.equivalent(err.body, expected);
+        t.end();
+    });
+});
+
+
+
+test('GET /packages (Search by multiple entries per field)', function (t) {
+    var query = '/packages?name=["api_test_256","api_test_512"]';
+
+    var testFilter = function (p) {
+        return p.name === 'api_test_256' || p.name === 'api_test_512';
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
+test('GET /packages (Search by multiple entries and fields)', function (t) {
+    var ownerUuid = '7f5501af-12da-4727-8579-625e527ed1f2';
+    var query = '/packages?name=["api_test_256","api_test_512"]' +
+                '&owner_uuids=["' + ownerUuid + '"]';
+
+    var testFilter = function (p) {
+        return (p.name === 'api_test_256' || p.name === 'api_test_512') &&
+               p.owner_uuids && p.owner_uuids.indexOf(ownerUuid) !== -1;
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
+test('GET /packages (Search by empty multiple entries)', function (t) {
+    client.get('/packages?name=[]', function (err, req, res, _) {
+        t.equal(res.statusCode, 404);
         t.end();
     });
 });
@@ -563,8 +673,10 @@ test('DELETE /packages/:uuid (--force)', function (t) {
 
 
 
+
 test('Clean up stale state (after)', cleanUp);
 test('Check no stale packages (after)', checkNoPkgs);
+
 
 
 
@@ -644,7 +756,6 @@ function checkDate(t, pkg) {
 function searchAndCheckPkgs(t, query, testFilter) {
     client.get(query, function (err, req, res, pkgs) {
         t.ifError(err);
-
         t.equal(res.statusCode, 200);
         t.ok(Array.isArray(pkgs));
 
