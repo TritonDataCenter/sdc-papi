@@ -142,6 +142,28 @@ stored in Moray.
 
 Returns a list of Packages matching the specified search filter.
 
+### Security Warning
+
+Since PAPI exposes several features of LDIF search filters, this entails that it
+does not escape any values (most importantly: strings). If you're not using
+features like '*' when querying, and you're searching for literal strings, then
+make sure to encode those strings. Here's Javascript that can do that for you:
+
+    return val.replace('(',  '{\\28}').
+               replace(')',  '{\\29}').
+               replace('\\', '{\\5c}').
+               replace('*',  '{\\2a}').
+               replace('/',  '{\\2f}');
+
+If you're using values that could have potentially come from adversaries, even
+indirectly, always encode all strings (including strings in arrays). If you do
+not, an attacker could potentially sneak something like this past:
+
+    GET /packages?owner_uuids=*
+
+It's highly unlikely you want anybody other than operators to have that power.
+When in doubt, encode.
+
 
 ### Inputs
 
@@ -179,10 +201,39 @@ these will be used to build an
     (&(name=sdc_128))
     (&(name=sdc_128)(owner_uuids=907e0dac-f01a-4ded-ac97-7c286fcf1785))
 
-You can also use any of the other LDAP search filters by specifying the query
-string argument `filter`. In that case, any of the aforementioned attributes
-will be ignored, and whatever you specify as the value of `filter` will be the
-only filter used to perform the search.
+PAPI also allows searching for multiple values per attribute. For example, if
+you're looking for all packages with the name "sdc_256" and "sdc_1024", then
+encode the alternatives into a JSON array and provide that as the argument:
+
+    GET /packages?name=["sdc_256","sdc_1024"]
+
+The above will return any package that has either "sdc_256" or "sdc_1024" as a
+name. This can be used to search any attributes with type float, double, number,
+string, and boolean.
+
+It is possible to search for matches within arrays. As an example, the networks
+attribute can store several values. If you'd like to search for all packages
+that use either the 33458263-d400-4a8b-8766-c260affa58f4 or
+8582fa4e-8c57-49ce-ace5-3aa96ec0a792 networks, then:
+
+    GET /packages?networks=["33458263-d400-4a8b-8766-c260affa58f4","8582fa4e-8c57-49ce-ace5-3aa96ec0a792"]
+
+Another trick is that PAPI supports wildcards. To search for all packages
+starting with the name "sdc_":
+
+    GET /packages?name=sdc_*
+
+And naturally, all of the above features can be combined:
+
+    GET /packages?version=1.0.1&name=sdc_*&networks=["33458263-d400-4a8b-8766-c260affa58f4","8*"]
+
+The one thing that cannot be searched are hashes. E.g. min_platform and traits.
+
+Sometimes all the above simply isn't sufficiently powerful. You can also use any
+of the other LDAP search filters by specifying the query string argument
+`filter`. In that case, any of the above methods will be ignored, and whatever
+you specify as the value of `filter` will be the only filter used to perform the
+search.
 
 For example, if you want to search for all the packages with a RAM greater than
 or equal to 1 GiB, where the `fss` attribute is present, and with a name
@@ -230,6 +281,12 @@ If owner_uuids are provided, the URL will return 404 if the package isn't
 allowed to be listed for the given owner_uuids, even if that package UUID
 exists. Packages which are allowed to be listed are all package which contain
 the given owner_uuids, or no owner_uuids at all (univeral packages).
+
+If providing owner_uuids, be aware that the multi-value trick using JSON arrays
+which can be used with ListPackages also applies here.
+
+*Important*: make sure to see the security warning in ListPackages when using
+owner_uuids which could have come from adversaries, even indirectly.
 
 
 ### Inputs
