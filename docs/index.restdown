@@ -51,15 +51,17 @@ example of a package:
 
 || **Attribute**         || **Required** || **Immutable** || **Type** || **Explanation**                                                                                         ||
 || uuid                  || true         || true          || uuid     || Package identifier.                                                                                     ||
-|| owner_uuid            ||              ||               || uuid     || Package owner.                                                                                          ||
+|| owner_uuids           ||              ||               || array    || UUIDs of package owners.                                                                                ||
 || active                || true         ||               || boolean  || Whether it can currently be used for provisioning.                                                      ||
 || default               || true         ||               || boolean  || Whether this is the default package of this name through the SDC 6.5 API                                ||
 || name                  || true         || true          || string   || Name of package in API.                                                                                 ||
-|| common_name           ||              ||               || string   || Name displayed in the Portal.                                                                           ||
-|| parent                ||              ||               || string   || `name` of the instance this was cloned from. Useful only if a package is created for a customer from another package. ||
 || version               || true         || true          || string   || Semver version number.                                                                                  ||
+|| common_name           ||              ||               || string   || Name displayed in the Portal.                                                                           ||
+|| urn                   ||              ||               || string   || A type of universal identifier sometimes used by SDC.                                                   ||
+|| parent                ||              ||               || string   || `name` of the instance this was cloned from. Useful only if a package is created for a customer from another package. ||
 || group                 ||              ||               || string   || Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name. ||
 || description           ||              ||               || string   || Human description of this package.                                                                      ||
+|| os                    ||              || true          || string   || Operating system for this package.                                                                      ||
 || vcpus                 || sometimes    || true          || integer  || Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                ||
 || cpu_cap               || true         || true          || integer  || Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                            ||
 || max_lwps              || true         || true          || integer  || Max number of processes allowed                                                                         ||
@@ -78,6 +80,7 @@ example of a package:
 || fss                   ||              ||               || integer  || Typically computed value. See below for more.                                                           ||
 || cpu_burst_ratio       ||              ||               || float    || Typically computed value. See below for more.                                                           ||
 || ram_ratio             ||              ||               || float    || Typically computed value. See below for more.                                                           ||
+|| billing_tag           ||              ||               || string   ||                                                                                                         ||
 
 
 ## Immutable Attributes and Package Persistence
@@ -165,16 +168,16 @@ PAPI takes advantage of Moray facility to use
 [LDAP Search Filters](http://ldapjs.org/filters.html) for object searches. If
 you specify any of the aforementioned input attributes, like:
 
-    GET /packages?owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785
+    GET /packages?owner_uuids=907e0dac-f01a-4ded-ac97-7c286fcf1785
     GET /packages?name=sdc_128
-    GET /packages?owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785&name=sdc_128
+    GET /packages?owner_uuids=907e0dac-f01a-4ded-ac97-7c286fcf1785&name=sdc_128
 
 these will be used to build an
 [LDAP Equality Filter](http://ldapjs.org/filters.html#equalityfilter):
 
-    (&(owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785))
+    (&(owner_uuids=907e0dac-f01a-4ded-ac97-7c286fcf1785))
     (&(name=sdc_128))
-    (&(name=sdc_128)(owner_uuid=907e0dac-f01a-4ded-ac97-7c286fcf1785))
+    (&(name=sdc_128)(owner_uuids=907e0dac-f01a-4ded-ac97-7c286fcf1785))
 
 You can also use any of the other LDAP search filters by specifying the query
 string argument `filter`. In that case, any of the aforementioned attributes
@@ -223,12 +226,17 @@ search options.
 
 Returns the package with the specified UUID.
 
+If owner_uuids are provided, the URL will return 404 if the package isn't
+allowed to be listed for the given owner_uuids, even if that package UUID
+exists. Packages which are allowed to be listed are all package which contain
+the given owner_uuids, or no owner_uuids at all (univeral packages).
+
 
 ### Inputs
 
-|| **Param**  || **Type** || **Description** || **Required?** ||
-|| uuid       || UUID     || Package UUID    || true          ||
-|| owner_uuid || UUID     || Package Owner   ||               ||
+|| **Param**   || **Type** || **Description** || **Required?** ||
+|| uuid        || UUID     || Package UUID    || true          ||
+|| owner_uuids || UUID     || Package Owners  ||               ||
 
 
 ### Responses
@@ -282,8 +290,8 @@ Performs an update operation on a package's mutable attributes.
 
 ### UpdatePackage General Inputs
 
-Any attributes not listed in the `immutable` array in the `etc/config.json`
-schema. See the first table above for the default required attributes.
+Any attributes not listed as immutable in the `etc/config.json` schema. See the
+first table above for the default required attributes.
 
 Some attributes support having no values. To delete an existing value, pass in
 'null' as its value.
