@@ -285,6 +285,9 @@ Performs an update operation on a package's mutable attributes.
 Any attributes not listed in the `immutable` array in the `etc/config.json`
 schema. See the first table above for the default required attributes.
 
+Some attributes support having no values. To delete an existing value, pass in
+'null' as its value.
+
 
 ### UpdatePackage Response Codes
 

@@ -561,8 +561,8 @@ test('PUT /packages/:uuid (OK)', function (t) {
     var ownerUuids = [config.ufds_admin_uuid];
 
     client.put(url, {
-        owner_uuids: ownerUuids
-//        common_name: null
+        owner_uuids: ownerUuids,
+        common_name: null
     }, function (err, req, res, pkg) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
@@ -572,7 +572,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
 
         var newPkg = deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
-//        delete newPkg.common_name;
+        delete newPkg.common_name;
         t.equivalent(pkg, newPkg);
 
         client.get(url, function (err2, req2, res2, pkg2) {
@@ -582,13 +582,13 @@ test('PUT /packages/:uuid (OK)', function (t) {
             t.equivalent(pkg2, newPkg);
 
             client.put(url, {
-                owner_uuids: []
+                owner_uuids: [],
+                common_name: packages[0].common_name
             }, function (err3, req3, res3, pkg3) {
                 t.ifError(err3);
 
                 checkDate(t, pkg3);
-                delete newPkg.owner_uuids;
-                t.equivalent(pkg3, newPkg);
+                t.equivalent(pkg3, packages[0]);
 
                 t.end();
             });
