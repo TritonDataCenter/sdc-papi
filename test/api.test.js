@@ -202,14 +202,26 @@ test('POST /packages (missing required fields)', function (t) {
         t.equal(res.statusCode, 409);
 
         t.equal(err.body.code, 'InvalidArgument');
-        t.equal(err.body.message,
-                /* BEGIN JSSTYLED */
-                "'active' is missing, 'cpu_cap' is missing, " +
-                "'default' is missing, 'max_lwps' is missing, " +
-                "'max_physical_memory' is missing, 'max_swap' is missing, " +
-                "'name' is missing, 'quota' is missing, " +
-                "'version' is missing, 'zfs_io_priority' is missing");
-                /* END JSSTYLED */
+        t.equal(err.body.message, 'Package is invalid');
+
+        var expectedErrs = [
+            { field: 'active', code: 'Missing', message: 'is missing' },
+            { field: 'cpu_cap', code: 'Missing', message: 'is missing' },
+            { field: 'default', code: 'Missing', message: 'is missing' },
+            { field: 'max_lwps', code: 'Missing', message: 'is missing' },
+            { field: 'max_physical_memory',
+              code: 'Missing',
+              message: 'is missing' },
+            { field: 'max_swap', code: 'Missing', message: 'is missing' },
+            { field: 'name', code: 'Missing', message: 'is missing' },
+            { field: 'quota', code: 'Missing', message: 'is missing' },
+            { field: 'version', code: 'Missing', message: 'is missing' },
+            { field: 'zfs_io_priority',
+              code: 'Missing',
+              message: 'is missing' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
         t.end();
     });
 });
@@ -251,17 +263,26 @@ test('POST /packages (fields validation failed)', function (t) {
         t.equal(res.statusCode, 409);
 
         t.equal(err.body.code, 'InvalidArgument');
-        t.equal(err.body.message,
-                /* BEGIN JSSTYLED */
-                "'networks': '[\"aefd7d3c-a4fd-4812-9dd7-24733974d861\"," +
-                "\"de749393-836c-42ce-9c7b-\"]' is invalid (contains " +
-                "non-UUID items), 'os': '2' is invalid (must be a string), " +
-                "'uuid': 'invalid-uuid-for-sure' is invalid (must be a " +
-                "UUID), 'max_physical_memory': '32' is invalid (must be " +
-                "greater or equal to 64), 'quota': '512' is invalid (must be " +
-                "greater or equal to 1024), 'zfs_io_priority': '10000' is " +
-                "invalid (must be greater or equal to 0 and less than 1000)");
-                /* END JSSTYLED */
+        t.equal(err.body.message, 'Package is invalid');
+
+        var expectedErrs = [
+            { field: 'networks',
+              code: 'Invalid',
+              message: 'must only contain UUIDs' },
+            { field: 'os', code: 'Invalid', message: 'must be string' },
+            { field: 'uuid', code: 'Invalid', message: 'must be UUID' },
+            { field: 'max_physical_memory',
+              code: 'Invalid',
+              message: 'must be greater or equal to 64' },
+            { field: 'quota',
+              code: 'Invalid',
+              message: 'must be greater or equal to 1024' },
+            { field: 'zfs_io_priority',
+              code: 'Invalid',
+              message: 'must be greater or equal to 0, and less than 1000' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
         t.end();
     });
 });
@@ -483,15 +504,27 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
-        t.equal(err.body.code, 'ConflictError');
-        t.equal(err.body.message,
-                /* BEGIN JSSTYLED */
-                "'cpu_cap' is immutable, 'max_lwps' is immutable, " +
-                "'max_physical_memory' is immutable, 'max_swap' is immutable, "+
-                "'name' is immutable, 'os' is immutable, " +
-                "'quota' is immutable, 'vcpus' is immutable, " +
-                "'version' is immutable, 'zfs_io_priority' is immutable");
-                /* END JSSTYLED */
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Attempt to update immutables');
+
+        var expectedErrs = [
+            { field: 'cpu_cap', code: 'Invalid', message: 'is immutable' },
+            { field: 'max_lwps', code: 'Invalid', message: 'is immutable' },
+            { field: 'max_physical_memory',
+              code: 'Invalid',
+              message: 'is immutable' },
+            { field: 'max_swap', code: 'Invalid', message: 'is immutable' },
+            { field: 'name', code: 'Invalid', message: 'is immutable' },
+            { field: 'os', code: 'Invalid', message: 'is immutable' },
+            { field: 'quota', code: 'Invalid', message: 'is immutable' },
+            { field: 'vcpus', code: 'Invalid', message: 'is immutable' },
+            { field: 'version', code: 'Invalid', message: 'is immutable' },
+            { field: 'zfs_io_priority',
+              code: 'Invalid',
+              message: 'is immutable' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
         t.end();
     });
 });
@@ -510,11 +543,15 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
         t.equal(res.statusCode, 409);
 
         t.equal(err.body.code, 'InvalidArgument');
-        t.equal(err.body.message,
-                /* BEGIN JSSTYLED */
-                "'owner_uuids': '[\"this-is-not-a-valid-uuid\"]' is invalid " +
-                "(contains non-UUID items)");
-                /* END JSSTYLED */
+        t.equal(err.body.message, 'Updated package is invalid');
+
+        var expectedErrs = [
+            { field: 'owner_uuids',
+              code: 'Invalid',
+              message: 'must only contain UUIDs' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
         t.end();
     });
 });

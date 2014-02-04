@@ -381,8 +381,11 @@ function savePapiPackages(packages, config, log, callback) {
             var validationErrs = validations.validate(pkg, backend.schema);
 
             if (validationErrs) {
-                log.error({ pkg: pkg, err: validationErrs },
-                          'Error importing package');
+                var msg = validationErrs.map(function (error) {
+                    return error.field + ' ' + error.message;
+                }).join(', ');
+
+                log.error({ pkg: pkg, err: msg }, 'Error importing package');
                 return next();
             }
 

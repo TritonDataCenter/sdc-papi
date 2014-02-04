@@ -371,6 +371,46 @@ Packages cannot be destroyed.
 
 
 
+# Errors
+
+Errors returned from PAPI are in a standard format:
+
+    {
+        "code", "...",
+        "message", "...",
+        "errors": [
+            {
+                "field": "...",
+                "code": "...",
+                "message": "..."
+            },
+            ...
+        ]
+    }
+
+An error message will always contain a top "code" and "message" attribute.
+Sometimes an error message will contain an "errors" attribute, which describes
+more specifically what went wrong.
+
+Here are top-level codes you're likely to see:
+
+|| **Code**         || **Description**                                               ||
+|| ResourceNotFound || Effectively a 404.                                            ||
+|| InvalidArgument  || Some attribute failed validation, or was otherwise incorrect. ||
+|| ConflictError    || Attempt to create a package with an already-used UUID.        ||
+
+Here are "errors"-level codes you're likely to see:
+
+|| **Code** ||
+|| Invalid  ||
+|| Missing  ||
+
+Not much to explain here: the attribute the code is part of was either invalid
+or missing.
+
+
+
+
 # Ping (GET /ping)
 
     GET /ping
