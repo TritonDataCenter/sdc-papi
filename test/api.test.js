@@ -449,6 +449,32 @@ test('GET /packages (Custom invalid filter)', function (t) {
 
 
 
+test('GET /packages (Custom substring filter ignoring case)', function (t) {
+    var filter = '(name:caseIgnoreSubstringsMatch:=API_TEST*)';
+    var query = '/packages?filter=' + qs.escape(filter);
+
+    var testFilter = function (p) {
+        return /^api_test/.test(p.name);
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
+test('GET /packages (Custom filter ignoring case)', function (t) {
+    var filter = '(name:caseIgnoreMatch:=API_TEST_256)';
+    var query = '/packages?filter=' + qs.escape(filter);
+
+    var testFilter = function (p) {
+        return /^api_test_256/.test(p.name);
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
 test('GET /packages (Search by multiple entries per field)', function (t) {
     var query = '/packages?name=["api_test_256","api_test_512"]';
 
