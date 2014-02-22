@@ -228,6 +228,40 @@ test('POST /packages (missing required fields)', function (t) {
 
 
 
+test('POST /packages (empty required fields)', function (t) {
+    var pkg = {
+        uuid: '', // uuid gets set if empty or null
+        name: '',
+        version: '',
+        active: true,
+        cpu_cap: 300,
+        default: false,
+        max_lwps: 1000,
+        max_physical_memory: 128,
+        max_swap: 128,
+        quota: 1280,
+        zfs_io_priority: 10
+    };
+
+    client.post('/packages', pkg, function (err, req, res, _) {
+        t.ok(err);
+        t.equal(res.statusCode, 409);
+
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Package is invalid');
+
+        var expectedErrs = [
+            { field: 'name', code: 'Missing', message: 'is empty' },
+            { field: 'version', code: 'Missing', message: 'is empty' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
+        t.end();
+    });
+});
+
+
+
 test('POST /packages (fields validation failed)', function (t) {
     var pkg = {
         name: 'regular_128',
