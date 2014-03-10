@@ -293,7 +293,7 @@ function checkPkg1(t) {
             quota: 134144,
             ram_ratio: 3.990024938,
             traits: { ssd: true, img_mgmt: true },
-            urn: 'sdc:test-1:1.0.0',
+            urn: 'sdc::test-1:1.0.0',
             uuid: 'b65b8ce2-29e7-4f63-b529-357f42bf0742',
             vcpus: 2,
             version: '1.0.0',
