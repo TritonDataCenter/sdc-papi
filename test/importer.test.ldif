@@ -11,7 +11,7 @@ max_lwps: 4000
 max_physical_memory: 4096
 max_swap: 8192
 min_platform: {"7.0": "20130917T001310Z"}
-name: test-1
+name:: dGVzdC0x
 networks: ["9ec60129-9034-47b4-b111-3026f9b1a10f", "5983940e-58a5-4543-b732-c689b1fe4c08"]
 objectclass: sdcpackage
 os: smartos

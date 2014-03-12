@@ -283,12 +283,20 @@ function loadLdifPackages(config, log, cb) {
                 return;
             }
 
-            var match = line.match(/^([^:]+?): (.+)$/);
+            // base64 entries have two colons instead of one between key/val
+            var match = line.match(/^([^:]+?):(:? .+)$/);
 
             if (match) {
                 var name  = match[1];
                 var value = match[2];
                 var orig  = lookup[name];
+
+                // necessary since some package 'name's are base64
+                if (value[0] === ':') {
+                    value = '' + new Buffer(value.slice(2), 'base64');
+                } else {
+                    value = value.slice(1);
+                }
 
                 if (orig) {
                     if (Array.isArray(orig)) {
