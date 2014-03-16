@@ -87,21 +87,27 @@ example of a package:
 
 ## Package: v
 
-The version of the format provided by PAPI. Version numbers change only if there are backward-breaking changes; a new non-required attribute appearing won't change the version number, but the removal of an attribute, or a change in the range of values or their meaning will.
+The version of the format provided by PAPI. Version numbers change only if there
+are backward-breaking changes; a new non-required attribute appearing won't
+change the version number, but the removal of an attribute, or a change in the
+range of values or their meaning will.
 
     "v": 1
 
 
 ## Package: uuid
 
-A unique identifier for this package. When referring to or accessing a specific package, track this.
+A unique identifier for this package. When referring to or accessing a specific
+package, track this.
 
     "uuid": "7fc87f43-2def-4e6f-9f8c-980b0385b36e"
 
 
 ## Package: owner_uuids
 
-An array of UUIDs identifying the specific owners who can use this package. If there is no array, the package is treated as publicly available, thus anyone can use this package to provision.
+An array of UUIDs identifying the specific owners who can use this package. If
+there is no array, the package is treated as publicly available, thus anyone can
+use this package to provision.
 
     "owner_uuids": ["ecc73356-f797-4cd2-8f80-514c27031efe", "ac503e10-a979-496d-a54e-0ec9eb2f999f"]
 
@@ -115,7 +121,9 @@ If true, this package can be used for provisioning, otherwise not.
 
 ## Package: default
 
-Used for (old) packages requiring SDC6.5 compatibility. Several packages can have the same name, so the one which has default true is what is exposed through the SDC6.5. API.
+Used for (old) packages requiring SDC6.5 compatibility. Several packages can
+have the same name, so the one which has default true is what is exposed through
+the SDC6.5. API.
 
     "default": true
 
@@ -129,35 +137,45 @@ Name displayed through the API.
 
 ## Package: version
 
-Semver version number for a package, usually paired with a [name](#package-name), e.g. small-1.0.0. There can be several packages with the same name, but different versions.
+Semver version number for a package, usually paired with a
+[name](#package-name), e.g. small-1.0.0. There can be several packages with the
+same name, but different versions.
 
     "version": "1.0.1"
 
 
 ## Package: common_name
 
-A human-readable name for the package. While [name](#package-name) is also text, it's not meant for consumption by end-users.
+A human-readable name for the package. While [name](#package-name) is also text,
+it's not meant for consumption by end-users.
 
     "common_name": "256MiB standard SmartOS VM"
 
 
 ## Package: urn
 
-Used for (old) packages requiring SDC6.5 compatibility. This is a unique identifier for this package, much like [uuid](#package-uuid), but is usually composed in part by the [name](#package-name) and [version](#package-version).
+Used for (old) packages requiring SDC6.5 compatibility. This is a unique
+identifier for this package, much like [uuid](#package-uuid), but is usually
+composed in part by the [name](#package-name) and [version](#package-version).
 
     "urn": "sdc:67939911-9835-4cc3-a112-70b6c52c8db7:2GB_dc_gl:1.0.1"
 
 
 ## Package: parent
 
-New packages can be created by copying old packages, but changing a few attributes. If you need to track from where a package was copied, set the parent to point to the original package's name or UUID. Note that this is just an opaque string, and no special meaning is enforced upon it.
+New packages can be created by copying old packages, but changing a few
+attributes. If you need to track from where a package was copied, set the parent
+to point to the original package's name or UUID. Note that this is just an
+opaque string, and no special meaning is enforced upon it.
 
     "parent": "g3-standard-4-smartos"
 
 
 ## Package: group
 
-Packages can come in groups sharing many similar attributes. This is an opaque string, where no special meaning is enforced by SDC, which can be used by ops to keep track of similar packages.
+Packages can come in groups sharing many similar attributes. This is an opaque
+string, where no special meaning is enforced by SDC, which can be used by ops to
+keep track of similar packages.
 
     "group": "Image Creation"
 
@@ -166,33 +184,37 @@ Packages can come in groups sharing many similar attributes. This is an opaque s
 
 A human-readable long-form description of a package.
 
-    "description": "4GB RAM, 1 CPUs, and 131GB Disk. Required for Image Creation."
+    "description": "4GB RAM, 1 CPUs, and 131GB Disk. Required for Img Creation."
 
 
 ## Package: os
 
-What operating system is this package for. If no OS is provided, it's assumed to be a regular SmartOS zone.
+What operating system is this package for. If no OS is provided, it's assumed to
+be a regular SmartOS zone.
 
     "os": "linux"
 
 
 ## Package: vcpus
 
-The number of virtual cpus (not cores!) presented by KVM inside the virtual machine. This is only required when using KVM; regular zones do not need this.
+The number of virtual cpus (not cores!) presented by KVM inside the virtual
+machine. This is only required when using KVM; regular zones do not need this.
 
     "vcpus": 2
 
 
 ## Package: cpu_cap
 
-An upper limit on how much CPU a zone can use, as a percent. E.g. 100 = one full core, 350 = 3.5 cores, and so forth.
+An upper limit on how much CPU a zone can use, as a percent. E.g. 100 = one full
+core, 350 = 3.5 cores, and so forth.
 
     "cpu_cap": 1600
 
 
 ## Package: max_lwps
 
-The maximum number of threads that a zone is allowed to run concurrently. This mostly applies to non-KVM zones.
+The maximum number of threads that a zone is allowed to run concurrently. This
+mostly applies to non-KVM zones.
 
     "max_lwps": 1000
 
@@ -213,77 +235,98 @@ The maximum amount of swap that a zone may use, in megabytes.
 
 ## Package: quota
 
-The maximum amount of disk that a zone may use (barring some overhead), in megabytes. This is unaffected by [max_swap](#package-max_swap).
+The maximum amount of disk that a zone may use (barring some overhead), in
+megabytes. This is unaffected by [max_swap](#package-max_swap).
 
     "quota": 10240
 
 
 ## Package: networks
 
-An array of UUIDs listing which networks a zone will be connected to. This isn't required, but an unconnected VM is typically of no use in a datacenter.
+An array of UUIDs listing which networks a zone will be connected to. This isn't
+required, but an unconnected VM is typically of no use in a datacenter.
 
     "networks": ["9ec60129-9034-47b4-b111-3026f9b1a10f", "5983940e-58a5-4543-b732-c689b1fe4c08"]
 
 
 ## Package: min_platform
 
-A hash which describes the minimum platform version to run this zone on, since some zones require new features only available on newer platforms. Each key in the hash is a version of SDC, while the value is a platform version.
+A hash which describes the minimum platform version to run this zone on, since
+some zones require new features only available on newer platforms. Each key in
+the hash is a version of SDC, while the value is a platform version.
 
     "min_platform": {"7.0": "20130917T001310Z"}
 
 
 ## Package: traits
 
-Free-form traits which are combined with image traits, and then used to match a CN during VM allocation. See DAPI documentation for more information about how traits work.
+Free-form traits which are combined with image traits, and then used to match a
+CN during VM allocation. See DAPI documentation for more information about how
+traits work.
 
     "traits": {"img_mgmt": true}
 
 
 ## Package: zfs_io_priority
 
-When I/O between different zones on a CN compete for disk, their zfs_io_priorities are compared, and the ones with higher priority get a larger proportion of disk accesses. The proportions are determined by the relative differences between this attribute in zones.
+When I/O between different zones on a CN compete for disk, their
+zfs_io_priorities are compared, and the ones with higher priority get a larger
+proportion of disk accesses. The proportions are determined by the relative
+differences between this attribute in zones.
 
     "zfs_io_priority": 50
 
 
 ## Package: overprovision_cpu
 
-How much the CPUs on a CN will be allowed to overprovision. E.g. 1.0 means there is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x CPU as it really does.
+How much the CPUs on a CN will be allowed to overprovision. E.g. 1.0 means there
+is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x CPU
+as it really does.
 
     "overprovision_cpu": 4.0
 
 
 ## Package: overprovision_memory
 
-How much the memory on a CN will be allowed to overprovision. E.g. 1.0 means there is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x memory as it really does. Going over 1.0 will especially cause problems with KVM zones.
+How much the memory on a CN will be allowed to overprovision. E.g. 1.0 means
+there is no overprovisioning, while 2.5 means the CN is treated as if it has
+2.5x memory as it really does. Going over 1.0 will especially cause problems
+with KVM zones.
 
     "overprovision_memory": 1.0
 
 
 ## Package: overprovision_storage
 
-How much disk on a CN will be allowed to overprovision. E.g. 1.0 means there is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x disk as it really does.
+How much disk on a CN will be allowed to overprovision. E.g. 1.0 means there is
+no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x disk as
+it really does.
 
     "overprovision_storage": 2.0
 
 
 ## Package: overprovision_io
 
-How much disk I/O on a CN will be allowed to overprovision. E.g. 1.0 means there is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x disk I/O as it really does.
+How much disk I/O on a CN will be allowed to overprovision. E.g. 1.0 means there
+is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x disk
+I/O as it really does.
 
     "overprovision_io": 1.0
 
 
 ## Package: overprovision_network
 
-How much network bandwidth on a CN will be allowed to overprovision. E.g. 1.0 means there is no overprovisioning, while 2.5 means the CN is treated as if it has 2.5x bandwidth as it really does.
+How much network bandwidth on a CN will be allowed to overprovision. E.g. 1.0
+means there is no overprovisioning, while 2.5 means the CN is treated as if it
+has 2.5x bandwidth as it really does.
 
     "overprovision_network": 2.0
 
 
 ## Package: billing_tag
 
-An arbitrary string that can be used by operators for billing purposes. This is an opaque string, where no special meaning is enforced by SDC.
+An arbitrary string that can be used by operators for billing purposes. This is
+an opaque string, where no special meaning is enforced by SDC.
 
 
 ## Immutable Attributes and Package Persistence
@@ -299,8 +342,8 @@ information.
 If an immutable value in a package needs to be altered, create a new package
 with:
 
-- Same [name](#package-name) and newest [version](#package-version) of the package
-  we would like to modify.
+- Same [name](#package-name) and newest [version](#package-version) of the
+  package we would like to modify.
 - Use the altered value(s).
 - Mark the new package as [active](#package-active), and set the old package to
   `active: false`
@@ -461,11 +504,11 @@ use of the `sort`, `limit` and `offset` parameters. These three parameters can
 be used on either the regular or LDAP filter version of the ListPackages
 endpoint.
 
-|| **Param** || **Type** || **Description**                                    ||
-|| sort      || string   || Sort by any string or number package attribute.    ||
-|| order     || string   || Order direction, either `ASC` or `DESC`.           ||
-|| limit     || integer  || Return only the given number of packages.          ||
-|| offset    || integer  || Limit the collection starting at the given offset. ||
+|| **Param** || **Type** || **Description**                                 ||
+|| sort      || string   || Sort by any string or number package attribute. ||
+|| order     || string   || Order direction, either `ASC` or `DESC`.        ||
+|| limit     || integer  || Return only the given number of packages.       ||
+|| offset    || integer  || Limit collection starting at the given offset.  ||
 
 Note that every ListPackages request will return an `x-resource-count` HTTP
 header, with a value equal to the total number of packages matching the given
@@ -599,10 +642,10 @@ more specifically what went wrong.
 
 Here are top-level codes you're likely to see:
 
-|| **Code**         || **Description**                                               ||
-|| ResourceNotFound || Effectively a 404.                                            ||
-|| InvalidArgument  || Some attribute failed validation, or was otherwise incorrect. ||
-|| ConflictError    || Attempt to create a package with an already-used UUID.        ||
+|| **Code**         || **Description**                                        ||
+|| ResourceNotFound || Effectively a 404.                                     ||
+|| InvalidArgument  || An attribute failed validation.                        ||
+|| ConflictError    || Attempt to create a package with an already-used UUID. ||
 
 Here are "errors"-level codes you're likely to see:
 
