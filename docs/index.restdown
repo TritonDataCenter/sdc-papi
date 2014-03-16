@@ -26,6 +26,7 @@ example of a package:
 
 
     {
+        v: 1,
         uuid: "7fc87f43-2def-4e6f-9f8c-980b0385b36e",
         active: true,
         cpu_cap: 25,
@@ -50,6 +51,7 @@ example of a package:
 
 
 || **Attribute**                                           || **Required** || **Unique** || **Immutable** || **Type** || **Explanation**                                                                                         ||
+|| [v](#package-v)                                         ||              ||            ||               || integer  || API version of PAPI.                                                                                    ||
 || [uuid](#package-uuid)                                   || true         || true       || true          || uuid     || Package identifier.                                                                                     ||
 || [owner_uuids](#package-owner_uuids)                     ||              ||            ||               || array    || UUIDs of package owners.                                                                                ||
 || [active](#package-active)                               || true         ||            ||               || boolean  || Whether it can currently be used for provisioning.                                                      ||
@@ -81,6 +83,13 @@ example of a package:
 || cpu_burst_ratio                                         ||              ||            ||               || float    || Typically computed value. See below for more.                                                           ||
 || ram_ratio                                               ||              ||            ||               || float    || Typically computed value. See below for more.                                                           ||
 || [billing_tag](#package-billing_tag)                     ||              ||            ||               || string   || Arbitrary tag that can be used by ops for billing purposes; it has no intrinsic meaning to SDC.         ||
+
+
+## Package: v
+
+The version of the format provided by PAPI. Version numbers change only if there are backward-breaking changes; a new non-required attribute appearing won't change the version number, but the removal of an attribute, or a change in the range of values or their meaning will.
+
+    "v": 1
 
 
 ## Package: uuid

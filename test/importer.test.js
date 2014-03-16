@@ -234,6 +234,7 @@ function checkMutatedPkg2(t) {
         checkDate(t, obj);
 
         var expectedResults = {
+            v: 1,
             active: false,
             cpu_cap: 300,
             default: true,
@@ -264,6 +265,7 @@ function checkPkg1(t) {
         checkDate(t, obj);
 
         var expectedResults = {
+            v: 1,
             active: true,
             common_name: 'Test 1',
             cpu_burst_ratio: 0.5,
@@ -317,6 +319,7 @@ function checkPkg2(t) {
         checkDate(t, obj);
 
         var expectedResults = {
+            v: 1,
             active: false,
             cpu_cap: 300,
             default: true,

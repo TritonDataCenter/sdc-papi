@@ -25,6 +25,7 @@ cfgFile = fs.existsSync(cfgFile) ? cfgFile :
 var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
 
 var packages = [ {
+    v: 1,
     uuid: '27543bf3-0c66-4f61-9ae4-7dda5cb4741b',
     name: 'api_test_128',
     version: '1.0.0',
@@ -55,6 +56,7 @@ var packages = [ {
     fss: 25,
     billing_tag: 'ApiTest128MiB'
 }, {
+    v: 1,
     uuid: '43cedda8-f844-4a62-956a-85691fa21b36',
     name: 'api_test_2048',
     version: '1.0.1',
@@ -68,6 +70,7 @@ var packages = [ {
     zfs_io_priority: 50,
     owner_uuids: ['7f5501af-12da-4727-8579-625e527ed1f2']
 }, {
+    v: 1,
     uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124',
     name: 'api_test_512',
     version: '1.0.1',
