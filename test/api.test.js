@@ -138,6 +138,19 @@ test('Check no stale packages (before)', checkNoPkgs);
 
 
 
+test('GET /ping', function (t) {
+    client.get('/ping', function (err, req, res, health) {
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(typeof (health) === 'object');
+        t.ok(typeof (health.pid) === 'number');
+        t.equal(health.backend, 'up');
+        t.end();
+    });
+});
+
+
+
 test('GET /packages', function (t) {
     client.get('/packages', function (err, req, res, pkgs) {
         t.ifError(err);
