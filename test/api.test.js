@@ -255,7 +255,7 @@ test('POST /packages (empty required fields)', function (t) {
         max_lwps: 1000,
         max_physical_memory: 128,
         max_swap: 128,
-        quota: 1280,
+        quota: 2048,
         zfs_io_priority: 10
     };
 
@@ -327,6 +327,9 @@ test('POST /packages (fields validation failed)', function (t) {
             { field: 'quota',
               code: 'Invalid',
               message: 'must be greater or equal to 1024' },
+            { field: 'quota',
+              code: 'Invalid',
+              message: 'must be a multiple of 1024' },
             { field: 'zfs_io_priority',
               code: 'Invalid',
               message: 'must be greater or equal to 0, and less than 1000' }
@@ -337,6 +340,46 @@ test('POST /packages (fields validation failed)', function (t) {
     });
 });
 
+
+
+test('POST /packages (quota must be multiple of 1024)', function (t) {
+    var pkg = {
+        name: 'regular_128',
+        version: '1.0.0',
+        os: 'smartos',
+        max_physical_memory: 64,
+        quota: 1280,
+        max_swap: 256,
+        cpu_cap: 350,
+        max_lwps: 2000,
+        zfs_io_priority: 100,
+        'default': true,
+        vcpus: 30,
+        active: true,
+        group: 'ramones',
+        uuid: 'ebb58a8c-b77e-4559-bbf0-19ebd67973f0',
+        description: 'This is a package description, and should be present',
+        common_name: 'Regular 128MiB',
+        fss: 25
+    };
+
+    client.post('/packages', pkg, function (err, req, res, _) {
+        t.ok(err);
+        t.equal(res.statusCode, 409);
+
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Package is invalid');
+
+        var expectedErrs = [
+            { field: 'quota',
+              code: 'Invalid',
+              message: 'must be a multiple of 1024' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
+        t.end();
+    });
+});
 
 
 test('POST /packages (duplicated unique field)', function (t) {

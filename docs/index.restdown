@@ -69,7 +69,7 @@ example of a package:
 || [max_lwps](#package-max_lwps)                           || true         ||            || true          || integer  || Max number of processes allowed                                                                         ||
 || [max_physical_memory](#package-max_physical_memory)     || true         ||            || true          || integer  || Max RAM in MiB.                                                                                         ||
 || [max_swap](#package-max_swap)                           || true         ||            || true          || integer  || Max swap in MiB.                                                                                        ||
-|| [quota](#package-quota)                                 || true         ||            || true          || integer  || Disk size in MiB.                                                                                       ||
+|| [quota](#package-quota)                                 || true         ||            || true          || integer  || Disk size in MiB. Must be a multiple of 1024.                                                           ||
 || [networks](#package-networks)                           ||              ||            ||               || array    || UUIDs of networks that the machine requires access to.                                                  ||
 || [min_platform](#package-min_platform)                   ||              ||            ||               || hash     || Minimum version(s) of OS platforms that this package can use.                                           ||
 || [traits](#package-traits)                               ||              ||            ||               || hash     || Set of traits for provisioning to servers. See DAPI docs for details on traits.                         ||
@@ -236,7 +236,8 @@ The maximum amount of swap that a zone may use, in megabytes.
 ## Package: quota
 
 The maximum amount of disk that a zone may use (barring some overhead), in
-megabytes. This is unaffected by [max_swap](#package-max_swap).
+megabytes. This is unaffected by [max_swap](#package-max_swap). It must be a
+multiple of 1024.
 
     "quota": 10240
 
