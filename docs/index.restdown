@@ -189,8 +189,12 @@ A human-readable long-form description of a package.
 
 ## Package: os
 
-What operating system is this package for. If no OS is provided, it's assumed to
-be a regular SmartOS zone.
+What operating system this is package for. When a package is used with an image,
+their 'os' attributes must exactly match (e.g. a package with os 'linux' will
+not work with an image with os 'windows').
+
+If no OS is provided, the package will work with any OS, and thus will work with
+an image with any OS specified.
 
     "os": "linux"
 
