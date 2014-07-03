@@ -143,12 +143,12 @@ function parseOpts() {
  * Convert LDIF or LDIF-like-JSON to more regular JS objects.
  */
 
-var attrs2ignore = ['dn', 'objectclass', 'controls'];
+var attrs2ignore = ['dn', 'objectclass', 'controls', 'overprovision_cpu',
+                    'overprovision_memory', 'overprovision_storage',
+                    'overprovision_network', 'overprovision_io'];
 var attrs2numerify = ['max_physical_memory', 'max_swap', 'vcpus', 'cpu_cap',
                       'max_lwps', 'quota', 'zfs_io_priority', 'fss',
-                      'cpu_burst_ratio', 'ram_ratio', 'overprovision_cpu',
-                      'overprovision_memory', 'overprovision_storage',
-                      'overprovision_network', 'overprovision_io'];
+                      'cpu_burst_ratio', 'ram_ratio'];
 var attrs2boolean = ['active', 'default'];
 
 function decode(obj, log) {
