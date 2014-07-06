@@ -198,6 +198,40 @@ test('POST /packages (OK)', function (t) {
 
 
 
+test('POST /packages/:uuid (bad fields)', function (t) {
+    var badPkg = {
+        active: false,
+        cpu_cap: 100,
+        max_lwps: 1000,
+        max_physical_memory: 1024,
+        max_swap: 2048,
+        name: 'foo',
+        quota: 10240,
+        version: '1.0.0',
+        zfs_io_priority: 100,
+        foobarbaz: true  // unrecognised
+    };
+
+    client.post('/packages', badPkg, function (err, req, res, pkg) {
+        t.ok(err);
+        t.equal(res.statusCode, 409);
+
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Unrecognised attributes');
+
+        var expectedErrs = [
+            { field: 'foobarbaz',
+              code: 'Invalid',
+              message: 'is an unsupported attribute' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
+        t.end();
+    });
+});
+
+
+
 test('POST /packages (missing required fields)', function (t) {
     var pkg = {
         vcpus: 1,
@@ -667,6 +701,33 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
             { field: 'owner_uuids',
               code: 'Invalid',
               message: 'must only contain UUIDs' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
+        t.end();
+    });
+});
+
+
+
+test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
+
+
+
+test('PUT /packages/:uuid (bad fields)', function (t) {
+    client.put('/packages/' + packages[0].uuid, {
+        foobarbaz: 21
+    }, function (err, req, res, pkg) {
+        t.ok(err);
+        t.equal(res.statusCode, 409);
+
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Unrecognised attributes');
+
+        var expectedErrs = [
+            { field: 'foobarbaz',
+              code: 'Invalid',
+              message: 'is an unsupported attribute' }
         ];
         t.equivalent(err.body.errors, expectedErrs);
 
