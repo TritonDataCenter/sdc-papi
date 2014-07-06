@@ -57,7 +57,6 @@ example of a package:
 || [name](#package-name)                                   || true         ||            || true          || string   || Name of package in API.                                                                                 ||
 || [version](#package-version)                             || true         ||            || true          || string   || Semver version number.                                                                                  ||
 || [common_name](#package-common_name)                     ||              ||            ||               || string   || Name displayed in the Portal.                                                                           ||
-|| [urn](#package-urn)                                     ||              || true       ||               || string   || A type of universal identifier sometimes used by SDC.                                                   ||
 || [parent](#package-parent)                               ||              ||            ||               || string   || `name` of instance this was cloned from. Useful if package is created from another package for a customer. ||
 || [group](#package-group)                                 ||              ||            ||               || string   || Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name. ||
 || [description](#package-description)                     ||              ||            ||               || string   || Human description of this package.                                                                      ||
@@ -143,15 +142,6 @@ A human-readable name for the package. While [name](#package-name) is also text,
 it's not meant for consumption by end-users.
 
     "common_name": "256MiB standard SmartOS VM"
-
-
-## Package: urn
-
-Used for (old) packages requiring SDC6.5 compatibility. This is a unique
-identifier for this package, much like [uuid](#package-uuid), but is usually
-composed in part by the [name](#package-name) and [version](#package-version).
-
-    "urn": "sdc:67939911-9835-4cc3-a112-70b6c52c8db7:2GB_dc_gl:1.0.1"
 
 
 ## Package: parent

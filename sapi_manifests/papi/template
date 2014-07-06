@@ -35,10 +35,6 @@
             "required": true,
             "immutable": true
         },
-        "urn": {
-            "type": "urn",
-            "unique": true
-        },
         "name": {
             "type": "string",
             "index": true,

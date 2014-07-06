@@ -145,7 +145,7 @@ function parseOpts() {
 
 var attrs2ignore = ['dn', 'objectclass', 'controls', 'overprovision_cpu',
                     'overprovision_memory', 'overprovision_storage',
-                    'overprovision_network', 'overprovision_io'];
+                    'overprovision_network', 'overprovision_io', 'urn'];
 var attrs2numerify = ['max_physical_memory', 'max_swap', 'vcpus', 'cpu_cap',
                       'max_lwps', 'quota', 'zfs_io_priority', 'fss',
                       'cpu_burst_ratio', 'ram_ratio'];

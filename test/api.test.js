@@ -29,7 +29,6 @@ var packages = [ {
     uuid: '27543bf3-0c66-4f61-9ae4-7dda5cb4741b',
     name: 'api_test_128',
     version: '1.0.0',
-    urn: 'sdc:27543bf3-0c66-4f61-9ae4-7dda5cb4741b:api_test_128:1.0.0',
     os: 'smartos',
     max_physical_memory: 128,
     quota: 5120,
