@@ -64,7 +64,7 @@ PATH	:= $(NODE_INSTALL)/bin:/opt/local/bin:${PATH}
 #
 .PHONY: all
 all: $(SMF_MANIFESTS) | $(TAP) $(REPO_DEPS) sdc-scripts
-	$(NPM) rebuild
+	$(NPM) install
 
 $(TAP): | $(NPM_EXEC)
 	$(NPM) install
