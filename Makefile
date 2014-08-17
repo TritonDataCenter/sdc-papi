@@ -23,6 +23,7 @@ TAP		:= ./node_modules/.bin/tap
 # Files
 #
 DOC_FILES	 = index.restdown
+RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
 JS_FILES	:= $(shell ls *.js) $(shell find lib test bin -name '*.js') bin/importer
 JSON_FILES	 = package.json
 JSL_CONF_NODE	 = tools/jsl.node.conf
