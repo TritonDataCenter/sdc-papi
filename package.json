@@ -12,7 +12,7 @@
     "sigyan": "0.2.0",
     "backoff": "2.3.0",
     "moray": "git+ssh://git@git.joyent.com:node-moray.git#1c65ad3e",
-    "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#a7366a02",
+    "sdc-clients": "git+ssh://git@github.com:joyent/node-sdc-clients.git#a7366a02",
     "ldapjs": "0.7.0",
     "vasync": "1.4.0",
     "clone": "0.1.6"
