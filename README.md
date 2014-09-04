@@ -8,39 +8,15 @@
     Copyright (c) 2014, Joyent, Inc.
 -->
 
-# Packages API
+# sdc-papi
 
-Repository: <git@git.joyent.com:papi.git>
-Browsing: <https://mo.joyent.com/papi>
-Who: Pedro P. Candel, Marsell Kukuljevic
-Docs: <https://mo.joyent.com/docs/papi>
-Tickets/bugs: <https://devhub.joyent.com/jira/browse/PAPI>
+This repository is part of the Joyent SmartDataCenter project (SDC).  For 
+contribution guidelines, issues, and general documentation, visit the main
+[SDC](http://github.com/joyent/sdc) project page.
 
+SDC 7 Packages API is an HTTP interface to packages used for provisioning.
 
-# Overview
-
-This is the repo for the SDC 7 Packages API, an HTTP interface to
-packages used for provisioning. See [docs](https://mo.joyent.com/docs/papi) for
-the details.
-
-
-# Development
-
-To run the Packages API server:
-
-    git clone git@git.joyent.com:papi.git
-    cd papi
-    git submodule update --init
-    make all
-    ./build/node/bin/node server.js | ./node_modules/.bin/bunyan
-
-To update the docs, edit "docs/index.restdown" and run `make docs` to update
-"docs/index.html".
-
-Before commiting/pushing run `make prepush` and, if possible, get a code
-review.
-
-# Testing
+## Testing
 
 Before running tests, consider pointing the config file at a different DB than
 `moray`. There is a script, `tools/coal-test-env.sh`, which will create a
@@ -56,14 +32,3 @@ Then, to run the tests, either:
 or, if you prefer some extra STDOUT info, go for the long version:
 
     ./build/node/bin/node test/*.test.js 2>&1 | bunyan
-
-
-# PENDING
-
-- Add PAPI zone to existing setups (JPC)
-- Update CloudAPI, AdminUI and workflows (VMAPI) to use PAPI instead of UFDS
-  sdcPackages. Note this means that both CloudAPI and AdminUI can remove the
-  local, non-master UFDS from their config files.
-- NOTE SOME DOWNTIME IS REQUIRED IN ORDER TO COMPLETE THE FOLLOWING STEPS:
-  - Run `./bin/ldap-import` in the aforementioned setups.
-  - Deploy the new zones using PAPI instead of UFDS sdcPackages.
