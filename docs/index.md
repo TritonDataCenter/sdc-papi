@@ -1,6 +1,6 @@
 ---
 title: SDC 7 Package API
-markdown2extras: wiki-tables, code-friendly
+markdown2extras: tables, code-friendly
 apisections: PackageObjects, Packages, Ping, Changelog
 ---
 <!--
@@ -57,33 +57,34 @@ example of a package:
     }
 
 
-|| **Attribute**                                           || **Required** || **Unique** || **Immutable** || **Type** || **Explanation**                                                                                         ||
-|| [v](#package-v)                                         ||              ||            ||               || integer  || API version of PAPI.                                                                                    ||
-|| [uuid](#package-uuid)                                   || true         || true       || true          || uuid     || Package identifier.                                                                                     ||
-|| [owner_uuids](#package-owner_uuids)                     ||              ||            ||               || array    || UUIDs of package owners.                                                                                ||
-|| [active](#package-active)                               || true         ||            ||               || boolean  || Whether it can currently be used for provisioning.                                                      ||
-|| [default](#package-default)                             || true         ||            ||               || boolean  || Whether this is the default package of this name through the SDC 6.5 API                                ||
-|| [name](#package-name)                                   || true         ||            || true          || string   || Name of package in API.                                                                                 ||
-|| [version](#package-version)                             || true         ||            || true          || string   || Semver version number.                                                                                  ||
-|| [common_name](#package-common_name)                     ||              ||            ||               || string   || Name displayed in the Portal.                                                                           ||
-|| [parent](#package-parent)                               ||              ||            ||               || string   || `name` of instance this was cloned from. Useful if package is created from another package for a customer. ||
-|| [group](#package-group)                                 ||              ||            ||               || string   || Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name. ||
-|| [description](#package-description)                     ||              ||            ||               || string   || Human description of this package.                                                                      ||
-|| [os](#package-os)                                       ||              ||            || true          || string   || Operating system for this package.                                                                      ||
-|| [vcpus](#package-vcpus)                                 || sometimes    ||            || true          || integer  || Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                ||
-|| [cpu_cap](#package-cpu_cap)                             || true         ||            || true          || integer  || Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                            ||
-|| [max_lwps](#package-max_lwps)                           || true         ||            || true          || integer  || Max number of processes allowed                                                                         ||
-|| [max_physical_memory](#package-max_physical_memory)     || true         ||            || true          || integer  || Max RAM in MiB.                                                                                         ||
-|| [max_swap](#package-max_swap)                           || true         ||            || true          || integer  || Max swap in MiB.                                                                                        ||
-|| [quota](#package-quota)                                 || true         ||            || true          || integer  || Disk size in MiB. Must be a multiple of 1024.                                                           ||
-|| [networks](#package-networks)                           ||              ||            ||               || array    || UUIDs of networks that the machine requires access to.                                                  ||
-|| [min_platform](#package-min_platform)                   ||              ||            ||               || hash     || Minimum version(s) of OS platforms that this package can use.                                           ||
-|| [traits](#package-traits)                               ||              ||            ||               || hash     || Set of traits for provisioning to servers. See DAPI docs for details on traits.                         ||
-|| [zfs_io_priority](#package-zfs_io_priority)             || true         ||            || true          || integer  || ZFS I/O priority. This operates relative to other machines on a CN, determining which get I/O first.    ||
-|| fss                                                     ||              ||            ||               || integer  || Typically computed value. See below for more.                                                           ||
-|| cpu_burst_ratio                                         ||              ||            ||               || float    || Typically computed value. See below for more.                                                           ||
-|| ram_ratio                                               ||              ||            ||               || float    || Typically computed value. See below for more.                                                           ||
-|| [billing_tag](#package-billing_tag)                     ||              ||            ||               || string   || Arbitrary tag that can be used by ops for billing purposes; it has no intrinsic meaning to SDC.         ||
+| Attribute                                           | Required  | Unique | Immutable | Type    | Explanation                                                                                                |
+| --------------------------------------------------- | --------- | ------ | --------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| [v](#package-v)                                     |           |        |           | integer | API version of PAPI.                                                                                       |
+| [uuid](#package-uuid)                               | true      | true   | true      | uuid    | Package identifier.                                                                                        |
+| [owner_uuids](#package-owner_uuids)                 |           |        |           | array   | UUIDs of package owners.                                                                                   |
+| [active](#package-active)                           | true      |        |           | boolean | Whether it can currently be used for provisioning.                                                         |
+| [default](#package-default)                         | true      |        |           | boolean | Whether this is the default package of this name through the SDC 6.5 API                                   |
+| [name](#package-name)                               | true      |        | true      | string  | Name of package in API.                                                                                    |
+| [version](#package-version)                         | true      |        | true      | string  | Semver version number.                                                                                     |
+| [common_name](#package-common_name)                 |           |        |           | string  | Name displayed in the Portal.                                                                              |
+| [parent](#package-parent)                           |           |        |           | string  | `name` of instance this was cloned from. Useful if package is created from another package for a customer. |
+| [group](#package-group)                             |           |        |           | string  | Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name.    |
+| [description](#package-description)                 |           |        |           | string  | Human description of this package.                                                                         |
+| [os](#package-os)                                   |           |        | true      | string  | Operating system for this package.                                                                         |
+| [vcpus](#package-vcpus)                             | sometimes |        | true      | integer | Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                   |
+| [cpu_cap](#package-cpu_cap)                         | true      |        | true      | integer | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
+| [max_lwps](#package-max_lwps)                       | true      |        | true      | integer | Max number of processes allowed                                                                            |
+| [max_physical_memory](#package-max_physical_memory) | true      |        | true      | integer | Max RAM in MiB.                                                                                            |
+| [max_swap](#package-max_swap)                       | true      |        | true      | integer | Max swap in MiB.                                                                                           |
+| [quota](#package-quota)                             | true      |        | true      | integer | Disk size in MiB. Must be a multiple of 1024.                                                              |
+| [networks](#package-networks)                       |           |        |           | array   | UUIDs of networks that the machine requires access to.                                                     |
+| [min_platform](#package-min_platform)               |           |        |           | hash    | Minimum version(s) of OS platforms that this package can use.                                              |
+| [traits](#package-traits)                           |           |        |           | hash    | Set of traits for provisioning to servers. See DAPI docs for details on traits.                            |
+| [zfs_io_priority](#package-zfs_io_priority)         | true      |        | true      | integer | ZFS I/O priority. This operates relative to other machines on a CN, determining which get I/O first.       |
+| fss                                                 |           |        |           | integer | Typically computed value. See below for more.                                                              |
+| cpu_burst_ratio                                     |           |        |           | float   | Typically computed value. See below for more.                                                              |
+| ram_ratio                                           |           |        |           | float   | Typically computed value. See below for more.                                                              |
+| [billing_tag](#package-billing_tag)                 |           |        |           | string  | Arbitrary tag that can be used by ops for billing purposes; it has no intrinsic meaning to SDC.            |
 
 
 ## Package: v
@@ -308,12 +309,13 @@ must be available as source of information for billing systems forever.
 
 ## Formulas
 
-|| **Attribute**   || **Formula**                                                                                 ||
-|| cpu_cap         || vCPU * Bursting Ratio * 100 + (vCPU <= 1 ? 50: 100)                                         ||
-|| fss             || CPU_CAP                                                                                     ||
-|| cpu_burst_ratio || (CPU_CAP / Burst Ratio) / FSS                                                               ||
-|| ram_ratio       || RAM GB / ((CPU_CAP / 100) * Bursting Ratio)                                                 ||
-|| name            || JPC uses this formula to name packages: [version]-[familyname]-[RAM GB]-[type]-[flags], version is currently g3, familyname is group, type is either smartos or kvm, flags is to catch cluster computes (cc) ||
+| Attribute       | Formula                                                                                                                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| cpu_cap         | vCPU * Bursting Ratio * 100 + (vCPU <= 1 ? 50: 100)                                                                                                                                                          |
+| fss             | CPU_CAP                                                                                                                                                                                                      |
+| cpu_burst_ratio | (CPU_CAP / Burst Ratio) / FSS                                                                                                                                                                                |
+| ram_ratio       | RAM GB / ((CPU_CAP / 100) * Bursting Ratio)                                                                                                                                                                  |
+| name            | JPC uses this formula to name packages: [version]-[familyname]-[RAM GB]-[type]-[flags], version is currently g3, familyname is group, type is either smartos or kvm, flags is to catch cluster computes (cc) |
 
 
 
@@ -443,11 +445,12 @@ use of the `sort`, `limit` and `offset` parameters. These three parameters can
 be used on either the regular or LDAP filter version of the ListPackages
 endpoint.
 
-|| **Param** || **Type** || **Description**                                 ||
-|| sort      || string   || Sort by any string or number package attribute. ||
-|| order     || string   || Order direction, either `ASC` or `DESC`.        ||
-|| limit     || integer  || Return only the given number of packages.       ||
-|| offset    || integer  || Limit collection starting at the given offset.  ||
+| Param  | Type    | Description                                     |
+| ------ | ------- | ----------------------------------------------- |
+| sort   | string  | Sort by any string or number package attribute. |
+| order  | string  | Order direction, either `ASC` or `DESC`.        |
+| limit  | integer | Return only the given number of packages.       |
+| offset | integer | Limit collection starting at the given offset.  |
 
 Note that every ListPackages request will return an `x-resource-count` HTTP
 header, with a value equal to the total number of packages matching the given
@@ -456,8 +459,9 @@ search options.
 
 ### Responses
 
-|| **Code** || **Description** || **Response**             ||
-|| 200      ||                 || Array of Package objects ||
+| Code | Description | Response                 |
+| ---- | ----------- | ------------------------ |
+| 200  |             | Array of Package objects |
 
 
 ## GetPackage (GET /packages/:uuid)
@@ -478,16 +482,18 @@ owner_uuids which could have come from adversaries, even indirectly.
 
 ### Inputs
 
-|| **Param**   || **Type** || **Description** || **Required?** ||
-|| uuid        || UUID     || Package UUID    || true          ||
-|| owner_uuids || UUID     || Package Owners  ||               ||
+| Param       | Type | Description    | Required? |
+| ----------- | ---- | -------------- | --------- |
+| uuid        | UUID | Package UUID   | true      |
+| owner_uuids | UUID | Package Owners |           |
 
 
 ### Responses
 
-|| **Code** || **Description**   || **Response**   ||
-|| 200      || Package found     || Package object ||
-|| 404      || Package not found || Error object   ||
+| Code | Description       | Response       |
+| ---- | ----------------- | -------------- |
+| 200  | Package found     | Package object |
+| 404  | Package not found | Error object   |
 
 
 ### Example
@@ -521,10 +527,11 @@ to get an updated list of these, you can check the
 
 ### Response Codes
 
-|| **Code** || **Description**     || **Response**   ||
-|| 201      || New Package created || Package object ||
-|| 409      || Missing parameter   || Error object   ||
-|| 409      || Invalid parameter   || Error object   ||
+| Code | Description         | Response       |
+| ---- | ------------------- | -------------- |
+| 201  | New Package created | Package object |
+| 409  | Missing parameter   | Error object   |
+| 409  | Invalid parameter   | Error object   |
 
 
 ## UpdatePackage (PUT /packages/:uuid)
@@ -543,12 +550,13 @@ Some attributes support having no values. To delete an existing value, pass in
 
 ### UpdatePackage Response Codes
 
-|| **Code** || **Description**                     || **Response**   ||
-|| 200      || Package updated                     || Package object ||
-|| 404      || Package not found                   || Error object   ||
-|| 409      || Missing parameter                   || Error object   ||
-|| 409      || Invalid parameter                   || Error object   ||
-|| 409      || Will not modify immutable attribute || Error object   ||
+| Code | Description                         | Response       |
+| ---- | ----------------------------------- | -------------- |
+| 200  | Package updated                     | Package object |
+| 404  | Package not found                   | Error object   |
+| 409  | Missing parameter                   | Error object   |
+| 409  | Invalid parameter                   | Error object   |
+| 409  | Will not modify immutable attribute | Error object   |
 
 
 ## DeletePackage (DELETE /package/:uuid)
@@ -581,16 +589,18 @@ more specifically what went wrong.
 
 Here are top-level codes you're likely to see:
 
-|| **Code**         || **Description**                                        ||
-|| ResourceNotFound || Effectively a 404.                                     ||
-|| InvalidArgument  || An attribute failed validation.                        ||
-|| ConflictError    || Attempt to create a package with an already-used UUID. ||
+| Code             | Description                                            |
+| ---------------- | ------------------------------------------------------ |
+| ResourceNotFound | Effectively a 404.                                     |
+| InvalidArgument  | An attribute failed validation.                        |
+| ConflictError    | Attempt to create a package with an already-used UUID. |
 
 Here are "errors"-level codes you're likely to see:
 
-|| **Code** ||
-|| Invalid  ||
-|| Missing  ||
+| Code    |
+| ------- |
+| Invalid |
+| Missing |
 
 Not much to explain here: the attribute the code is part of was either invalid
 or missing.

@@ -30,7 +30,7 @@ TAP		:= ./node_modules/.bin/tap
 #
 # Files
 #
-DOC_FILES	 = index.restdown
+DOC_FILES	 = index.md
 RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
 EXTRA_DOC_DEPS += deps/restdown-brand-remora/.git
 JS_FILES	:= $(shell ls *.js) $(shell find lib test bin -name '*.js') bin/importer
