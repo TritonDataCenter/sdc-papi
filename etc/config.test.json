@@ -25,7 +25,7 @@
         "maxConnections": 1
     },
     "sapi": {
-        "url": "http://10.99.99.33"
+        "url": "http://10.99.99.32"
     },
     "bucket": "sdc_packages",
     "schema": {
@@ -158,6 +158,9 @@
         "billing_tag": {
             "type": "string",
             "index": true
+        },
+        "server_spread": {
+            "type": "string"
         }
     }
 }

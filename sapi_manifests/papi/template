@@ -158,6 +158,9 @@
         "billing_tag": {
             "type": "string",
             "index": true
+        },
+        "server_spread": {
+            "type": "string"
         }
     }
 }
