@@ -77,7 +77,7 @@ var packages = [ {
     quota: 81920,
     zfs_io_priority: 50,
     owner_uuids: ['7f5501af-12da-4727-8579-625e527ed1f2'],
-    server_spread: 'standard'
+    server_spread: 'min-owner'
 }, {
     v: 1,
     uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124',
@@ -367,7 +367,7 @@ test('POST /packages (fields validation failed)', function (t) {
             { field: 'uuid', code: 'Invalid', message: 'must be UUID' },
             { field: 'server_spread',
               code: 'Invalid',
-              message: 'must be one of: standard, min-ram, random, min-owner' },
+              message: 'must be one of: min-ram, random, min-owner' },
             { field: 'max_physical_memory',
               code: 'Invalid',
               message: 'must be greater or equal to 64' },
