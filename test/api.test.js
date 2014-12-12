@@ -62,7 +62,7 @@ var packages = [ {
     common_name: 'API Test 128MiB',
     fss: 25,
     billing_tag: 'ApiTest128MiB',
-    server_spread: 'random'
+    alloc_server_spread: 'random'
 }, {
     v: 1,
     uuid: '43cedda8-f844-4a62-956a-85691fa21b36',
@@ -77,7 +77,7 @@ var packages = [ {
     quota: 81920,
     zfs_io_priority: 50,
     owner_uuids: ['7f5501af-12da-4727-8579-625e527ed1f2'],
-    server_spread: 'min-owner'
+    alloc_server_spread: 'min-owner'
 }, {
     v: 1,
     uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124',
@@ -349,7 +349,7 @@ test('POST /packages (fields validation failed)', function (t) {
         description: 'This is a package description, and should be present',
         common_name: 'Regular 128MiB',
         fss: 25,
-        server_spread: 'invalid'
+        alloc_server_spread: 'invalid'
     };
 
     client.post('/packages', pkg, function (err, req, res, _) {
@@ -365,7 +365,7 @@ test('POST /packages (fields validation failed)', function (t) {
               message: 'must only contain UUIDs' },
             { field: 'os', code: 'Invalid', message: 'must be string' },
             { field: 'uuid', code: 'Invalid', message: 'must be UUID' },
-            { field: 'server_spread',
+            { field: 'alloc_server_spread',
               code: 'Invalid',
               message: 'must be one of: min-ram, random, min-owner' },
             { field: 'max_physical_memory',

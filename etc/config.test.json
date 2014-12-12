@@ -159,7 +159,7 @@
             "type": "string",
             "index": true
         },
-        "server_spread": {
+        "alloc_server_spread": {
             "type": "string"
         }
     }
