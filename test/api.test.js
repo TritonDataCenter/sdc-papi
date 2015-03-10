@@ -331,7 +331,7 @@ test('POST /packages (fields validation failed)', function (t) {
         max_swap: 256,
         cpu_cap: 350,
         max_lwps: 2000,
-        zfs_io_priority: 10000,
+        zfs_io_priority: 100000,
         'default': true,
         vcpus: 30,
         active: true,
@@ -379,7 +379,8 @@ test('POST /packages (fields validation failed)', function (t) {
               message: 'must be a multiple of 1024' },
             { field: 'zfs_io_priority',
               code: 'Invalid',
-              message: 'must be greater or equal to 0, and less than 3200' }
+              message: 'must be greater or equal to 0, and less than or ' +
+                  'equal to 16383' }
         ];
         t.equivalent(err.body.errors, expectedErrs);
 
