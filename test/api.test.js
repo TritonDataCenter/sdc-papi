@@ -379,7 +379,7 @@ test('POST /packages (fields validation failed)', function (t) {
               message: 'must be a multiple of 1024' },
             { field: 'zfs_io_priority',
               code: 'Invalid',
-              message: 'must be greater or equal to 0, and less than 1000' }
+              message: 'must be greater or equal to 0, and less than 3200' }
         ];
         t.equivalent(err.body.errors, expectedErrs);
 
@@ -476,7 +476,7 @@ test('GET /packages (Search by owner_uuids)', function (t) {
         t.equal(res.statusCode, 200);
         t.ok(res.headers['x-resource-count']);
         t.ok(Array.isArray(pkgs));
-        t.ok(pkgs.length > 1);
+        t.ok(pkgs.length > 0);
 
         pkgs.forEach(function (p) {
             t.ok(p.owner_uuids === undefined ||

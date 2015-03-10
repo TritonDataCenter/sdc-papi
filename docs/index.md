@@ -72,7 +72,7 @@ example of a package:
 | [description](#package-description)                 |           |        |           | string  | Human description of this package.                                                                         |
 | [os](#package-os)                                   |           |        | true      | string  | Operating system for this package.                                                                         |
 | [vcpus](#package-vcpus)                             | sometimes |        | true      | integer | Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                   |
-| [cpu_cap](#package-cpu_cap)                         | true      |        | true      | integer | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
+| [cpu_cap](#package-cpu_cap)                         | sometimes |        | true      | integer | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
 | [max_lwps](#package-max_lwps)                       | true      |        | true      | integer | Max number of processes allowed                                                                            |
 | [max_physical_memory](#package-max_physical_memory) | true      |        | true      | integer | Max RAM in MiB.                                                                                            |
 | [max_swap](#package-max_swap)                       | true      |        | true      | integer | Max swap in MiB.                                                                                           |
@@ -206,6 +206,11 @@ An upper limit on how much CPU a zone can use, as a percent. E.g. 100 = one full
 core, 350 = 3.5 cores, and so forth.
 
     "cpu_cap": 1600
+
+cpu_cap is required by default, but can be made optional by setting
+`IGNORE_CPU_CAP` in papi's sapi metadata to boolean "true". *Do not* mix
+packages with and without cpu_cap in the same datacenter; SDC's allocator will
+quickly decide there's no longer any spare capacity in a DC, even if there is.
 
 
 ## Package: max_lwps

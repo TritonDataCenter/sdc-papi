@@ -64,7 +64,12 @@
         "cpu_cap": {
             "type": "number",
             "index": true,
+            {{#IGNORE_CPU_CAP}}
+            "ignore": true,
+            {{/IGNORE_CPU_CAP}}
+            {{^IGNORE_CPU_CAP}}
             "required": true,
+            {{/IGNORE_CPU_CAP}}
             "immutable": true
         },
         "default": {
