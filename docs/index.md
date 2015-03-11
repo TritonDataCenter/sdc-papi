@@ -325,6 +325,37 @@ must be available as source of information for billing systems forever.
 
 
 
+# SAPI Configuration
+
+When using the config-agent service in the PAPI zone, which draws metadata from
+SAPI, it's possible to change certain default behaviours of PAPI.
+
+In the SAPI application named `sdc`, adding or changing the following keys in
+`metadata` will affect PAPI's behaviour. This is useful for testing, or
+specialized circumstances in production.
+
+| Key                | Type    | Default | Description                                               |
+| ------------------ | ------- | ------- | --------------------------------------------------------- |
+| **IGNORE_CPU_CAP** | boolean | false   | Determines whether cpu_cap can be set on packages or not. |
+
+If any of the keys above aren't in the `sdc` `metadata` section, it's treated as
+if the default value was specified. Be careful when changing from the default
+values in production.
+
+Be careful when setting IGNORE_CPU_CAP to true; it should only be set on fresh
+installs of SDC, or if none of packages existing before it was set have any VMs
+(and also will have no VMs) in the DC. Mixing zones made with cpu_caps, and
+zones made without cpu_caps, in the same DC will confuse SDC's allocator.
+
+
+### Example
+
+    papi_svc=$(sdc-sapi /services?name=papi | json -Ha uuid)
+    sdc-sapi /services/$papi_svc -X PUT -d '{ "metadata": { "IGNORE_CPU_CAP": true } }'
+
+
+
+
 # Packages
 
 The Package API's HTTP endpoints let us fetch and modify information about the
