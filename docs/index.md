@@ -211,6 +211,8 @@ cpu_cap is required by default, but can be made optional by setting
 `IGNORE_CPU_CAP` in papi's sapi metadata to boolean "true". *Do not* mix
 packages with and without cpu_cap in the same datacenter; SDC's allocator will
 quickly decide there's no longer any spare capacity in a DC, even if there is.
+This is because it treats CNs hosting VMs with no cpu_cap as having no available
+CPU for packages that *do* have a cpu_cap.
 
 
 ## Package: max_lwps
