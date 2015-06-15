@@ -208,11 +208,8 @@ core, 350 = 3.5 cores, and so forth.
     "cpu_cap": 1600
 
 cpu_cap is required by default, but can be made optional by setting
-`IGNORE_CPU_CAP` in papi's sapi metadata to boolean "true". *Do not* mix
-packages with and without cpu_cap in the same datacenter; SDC's allocator will
-quickly decide there's no longer any spare capacity in a DC, even if there is.
-This is because it treats CNs hosting VMs with no cpu_cap as having no available
-CPU for packages that *do* have a cpu_cap.
+`IGNORE_CPU_CAP` in papi's sapi metadata to boolean "true". See more details and
+*important warnings* in the "SAPI Configuration" section below.
 
 
 ## Package: max_lwps
@@ -345,9 +342,11 @@ if the default value was specified. Be careful when changing from the default
 values in production.
 
 Be careful when setting IGNORE_CPU_CAP to true; it should only be set on fresh
-installs of SDC, or if none of packages existing before it was set have any VMs
-(and also will have no VMs) in the DC. Mixing zones made with cpu_caps, and
-zones made without cpu_caps, in the same DC will confuse SDC's allocator.
+installs of SDC, or elsewhere where you can ensure that VMs provisioned without
+cpu_cap will not be mixed with VMs having cpu_cap on the same CN. Mixing VMs
+made with cpu_caps, and VMs made without cpu_caps, on the same CN will confuse
+SDC's allocator. This is because it treats CNs hosting VMs with no cpu_cap as
+having no available CPU for packages that *do* have a cpu_cap.
 
 
 ### Example
