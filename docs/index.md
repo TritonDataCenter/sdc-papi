@@ -10,7 +10,7 @@ apisections: PackageObjects, Packages, Ping, Changelog
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright (c) 2016, Joyent, Inc.
 -->
 
 # SDC 7 Package API
@@ -64,7 +64,7 @@ example of a package:
 | [owner_uuids](#package-owner_uuids)                 |           |        |           | array   | UUIDs of package owners.                                                                                   |
 | [active](#package-active)                           | true      |        |           | boolean | Whether it can currently be used for provisioning.                                                         |
 | [default](#package-default)                         | true      |        |           | boolean | Whether this is the default package of this name through the SDC 6.5 API                                   |
-| [name](#package-name)                               | true      |        | true      | string  | Name of package in API.                                                                                    |
+| [name](#package-name)                               | true      |        | true      | string  | Name of package in API. See below for details on valid names.                                              |
 | [version](#package-version)                         | true      |        | true      | string  | Semver version number.                                                                                     |
 | [common_name](#package-common_name)                 |           |        |           | string  | Name displayed in the Portal.                                                                              |
 | [parent](#package-parent)                           |           |        |           | string  | `name` of instance this was cloned from. Useful if package is created from another package for a customer. |
@@ -132,9 +132,12 @@ the SDC6.5. API.
 
 ## Package: name
 
-Name displayed through the API. 
+Name displayed through the API.
 
     "name": "g3-standard-0.25-smartos"
+
+Must match /^[a-zA-Z0-9]([a-zA-Z0-9\_\-\.]+)?[a-zA-Z0-9]$/ and not have
+consecutive '_', '-' or '.' characters.
 
 
 ## Package: version

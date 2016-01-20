@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2016, Joyent, Inc.
  */
 
 /*
@@ -233,6 +233,43 @@ test('POST /packages/:uuid (bad fields)', function (t) {
             { field: 'foobarbaz',
               code: 'Invalid',
               message: 'is an unsupported attribute' }
+        ];
+        t.equivalent(err.body.errors, expectedErrs);
+
+        t.end();
+    });
+});
+
+
+
+test('POST /packages/:uuid (invalid package name)', function (t) {
+    var badPkg = {
+        active: false,
+        cpu_cap: 100,
+        default: false,
+        max_lwps: 1000,
+        max_physical_memory: 1024,
+        max_swap: 2048,
+        name: '@#$\'!',
+        quota: 10240,
+        version: '1.0.0',
+        zfs_io_priority: 100
+    };
+
+    client.post('/packages', badPkg, function (err, req, res, pkg) {
+        t.ok(err);
+        t.equal(res.statusCode, 409);
+
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Package is invalid');
+
+        var expectedErrs = [
+            { field: 'name',
+              code: 'Invalid',
+              message: 'must match '
+                  + '/^[a-zA-Z0-9]([a-zA-Z0-9\\_\\-\\.]+)?[a-zA-Z0-9]$/ and not'
+                  + ' contain repeated \'-\', \'_\' or \'.\' characters'
+            }
         ];
         t.equivalent(err.body.errors, expectedErrs);
 
