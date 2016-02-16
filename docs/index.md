@@ -66,7 +66,7 @@ example of a package:
 | [cpu_cap](#package-cpu_cap)                         | sometimes |        | true      | integer | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
 | [default](#package-default)                         | true      |        |           | boolean | Whether this is the default package of this name through the SDC 6.5 API                                   |
 | [description](#package-description)                 |           |        |           | string  | Human description of this package.                                                                         |
-| fss                                                 |           |        |           | integer | Typically computed value. See below for more.                                                              |
+| [fss](#package-fss)                                 |           |        |           | integer | CPU shares for a VM. This operates relative to other machines on a CN. (also known as cpu_shares)          |
 | [group](#package-group)                             |           |        |           | string  | Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name.    |
 | [max_lwps](#package-max_lwps)                       | true      |        | true      | integer | Max number of processes allowed                                                                            |
 | [max_physical_memory](#package-max_physical_memory) | true      |        | true      | integer | Max RAM in MiB.                                                                                            |
@@ -134,6 +134,20 @@ the SDC6.5. API.
 A human-readable long-form description of a package.
 
     "description": "4GB RAM, 1 CPUs, and 131GB Disk. Required for Img Creation."
+
+
+## Package: fss
+
+Sets a limit on the number of fair share scheduler (FSS) CPU shares for a VM.
+This value is relative, so a value only has meaning in relation to other VMs on
+the same CN. If one VM has a value 2048 and one has a value 1024, the VM with
+2048 should expect to get more time from the scheduler. The rest of SDC calls
+this value 'cpu_shares'.
+
+For some more information, see also references to 'cpu-shares' in the [SmartOS
+zonecfg(1M) man page.](https://smartos.org/man/1M/zonecfg)
+
+    "fss": 1024
 
 
 ## Package: group
@@ -668,15 +682,4 @@ along with the backend error message:
       "backend_error":"no connection"
     }
 
-
-# Changelog
-
-
-## 2013-10-28
-
-- Minor tweaks
-
-## 2013-06-15
-
-- First PAPI version
 
