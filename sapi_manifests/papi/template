@@ -12,6 +12,9 @@
         "version": 5
     },
     "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",
+{{#experimental_fluentd_host}}
+    "fluentd_host": "{{{experimental_fluentd_host}}}",
+{{/experimental_fluentd_host}}
     "first_boot": {{{SERVICE_IS_FIRST_BOOT}}},
     "ufds": {
         "url": "ldaps://{{{ufds_domain}}}",

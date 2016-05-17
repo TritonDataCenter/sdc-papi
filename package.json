@@ -9,11 +9,11 @@
     "url": "git+ssh://git@github.com:joyent/sdc-papi.git"
   },
   "dependencies": {
+    "effluent-logger": "git+https://github.com/joshwilsdon/effluent-logger.git#d662f161a07f94045ad2afb45442931511c40e51",
     "restify": "2.6.1",
     "libuuid": "0.1.2",
     "nopt": "2.0.0",
-    "bunyan": "0.22.0",
-    "evt-tracer": "https://github.com/joshwilsdon/evt-tracer.git#master",
+    "bunyan": "1.8.1",
     "sigyan": "0.2.0",
     "backoff": "2.3.0",
     "moray": "git+ssh://git@github.com:joyent/node-moray.git#b84ef0e",
