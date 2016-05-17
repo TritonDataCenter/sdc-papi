@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2016, Joyent, Inc.
  */
 
 /*
@@ -82,7 +82,7 @@ function run() {
             process.abort();
         }
 
-        LOG.info('Packages API listening at %s', server.url);
+        LOG.info('PAPI listening at %s', server.url);
     });
 }
 
@@ -95,7 +95,7 @@ if (PARSED.help) {
 
 LOG = new Logger({
     level: (PARSED.debug ? 'trace' : 'info'),
-    name: 'PackagesAPI',
+    name: 'papi',
     stream: process.stderr,
     serializers: restify.bunyan.serializers
 });
