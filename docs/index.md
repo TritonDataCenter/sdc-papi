@@ -39,7 +39,6 @@ example of a package:
         uuid: "7fc87f43-2def-4e6f-9f8c-980b0385b36e",
         active: true,
         cpu_cap: 25,
-        default: false,
         group: "Standard",
         description: "Micro 0.25 GB RAM 0.125 CPUs 16 GB Disk",
         max_lwps: 4000,
@@ -64,7 +63,7 @@ example of a package:
 | [common_name](#package-common_name)                 |           |        |           | string  | Name displayed in the Portal.                                                                              |
 | cpu_burst_ratio                                     |           |        |           | float   | Typically computed value. See below for more.                                                              |
 | [cpu_cap](#package-cpu_cap)                         | sometimes |        | true      | integer | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
-| [default](#package-default)                         | true      |        |           | boolean | Whether this is the default package of this name through the SDC 6.5 API                                   |
+| [default](#package-default)                         |           |        |           | boolean | **DEPRECATED** Whether this is the default package of this name through the SDC 6.5 API                    |
 | [description](#package-description)                 |           |        |           | string  | Human description of this package.                                                                         |
 | [fss](#package-fss)                                 |           |        |           | integer | CPU shares for a VM. This operates relative to other machines on a CN. (also known as cpu_shares)          |
 | [group](#package-group)                             |           |        |           | string  | Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name.    |
@@ -122,11 +121,9 @@ cpu_cap is required by default, but can be made optional by setting
 
 ## Package: default
 
-Used for (old) packages requiring SDC6.5 compatibility. Several packages can
-have the same name, so the one which has default true is what is exposed through
-the SDC6.5. API.
+**DEPRECATED**
 
-    "default": true
+Was used for (old) packages requiring SDC6.5 compatibility.
 
 
 ## Package: description

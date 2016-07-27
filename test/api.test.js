@@ -303,7 +303,6 @@ test('POST /packages (missing required fields)', function (t) {
         var expectedErrs = [
             { field: 'active', code: 'Missing', message: 'is missing' },
             { field: 'cpu_cap', code: 'Missing', message: 'is missing' },
-            { field: 'default', code: 'Missing', message: 'is missing' },
             { field: 'max_lwps', code: 'Missing', message: 'is missing' },
             { field: 'max_physical_memory',
               code: 'Missing',
