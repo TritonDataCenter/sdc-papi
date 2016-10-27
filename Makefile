@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2016, Joyent, Inc.
 #
 
 #
@@ -33,7 +33,7 @@ TAP		:= ./node_modules/.bin/tap
 DOC_FILES	 = index.md
 RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
 EXTRA_DOC_DEPS += deps/restdown-brand-remora/.git
-JS_FILES	:= $(shell ls *.js) $(shell find lib test bin -name '*.js') bin/importer
+JS_FILES	:= $(shell ls *.js) $(shell find lib test bin -name '*.js')
 JSON_FILES	 = package.json
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
@@ -41,12 +41,12 @@ JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 SMF_MANIFESTS_IN = smf/manifests/papi.xml.in
 
-NODE_PREBUILT_VERSION=v0.10.26
 
+NODE_PREBUILT_VERSION=v4.6.1
 ifeq ($(shell uname -s),SunOS)
-    NODE_PREBUILT_TAG=zone
-    # Allow building on a SmartOS image other than sdc-smartos/1.6.3.
-    NODE_PREBUILT_IMAGE=fd2cc906-8938-11e3-beab-4359c665ac99
+        NODE_PREBUILT_TAG=zone
+        # Allow building on other than sdc-minimal-multiarch-lts@15.4.1
+        NODE_PREBUILT_IMAGE=18b094b0-eb01-11e5-80c1-175dac7ddf02
 endif
 
 include ./tools/mk/Makefile.defs
