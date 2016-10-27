@@ -33,7 +33,7 @@ TAP		:= ./node_modules/.bin/tap
 DOC_FILES	 = index.md
 RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
 EXTRA_DOC_DEPS += deps/restdown-brand-remora/.git
-JS_FILES	:= $(shell ls *.js) $(shell find lib test bin -name '*.js')
+JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
 JSON_FILES	 = package.json
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
@@ -89,7 +89,6 @@ release: check all docs
 	@touch $(RELSTAGEDIR)/site/.do-not-delete-me
 	@mkdir -p $(RELSTAGEDIR)/root
 	cp -r	$(ROOT)/build \
-		$(ROOT)/bin \
 		$(ROOT)/etc \
 		$(ROOT)/lib \
 		$(ROOT)/server.js \
