@@ -26,11 +26,17 @@ var papi = require('../lib/papi');
 
 
 
+// If we're in the papi zone, use the papi config. Otherwise assume we're on
+// someone's laptop and they're using the default COAL IP addresses.
 var cfgFile = path.resolve(__dirname, '../etc/config.json');
 cfgFile = fs.existsSync(cfgFile) ? cfgFile :
                path.resolve(__dirname, '../etc/config.test.json');
 
 var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
+
+// For tests, override the port to 8080 so we don't block (or get queries for)
+// real papi if we're running in the zone.
+config.port = 8080;
 
 var packages = [ {
     v: 1,
@@ -114,7 +120,7 @@ test('setup', function (t) {
     papi.createServer({
         config: cfgFile,
         log: log,
-        overrides: {},
+        overrides: config,
         test: true
     }, function (err, s) {
         server  = s;
