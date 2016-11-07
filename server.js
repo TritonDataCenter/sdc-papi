@@ -18,6 +18,7 @@ var Logger = require('bunyan');
 var nopt = require('nopt');
 var path = require('path');
 var papi = require('./lib/papi');
+var tritonTracer = require('triton-tracer');
 
 var DEFAULT_CFG = __dirname + '/etc/config.json';
 
