@@ -100,5 +100,17 @@ LOG = new Logger({
     serializers: restify.bunyan.serializers
 });
 
+// Init tracing now that we have a logger
+tritonTracer.init({
+    log: LOG,
+    sampling: {
+        route: {
+            ping: 0.1
+        }, GET: {
+            '/ping': 0.1
+        }
+    }
+});
+
 // There we go!:
 run();
