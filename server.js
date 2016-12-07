@@ -106,9 +106,9 @@ tritonTracer.init({
     log: LOG,
     sampling: {
         route: {
-            ping: 0.1
+            ping: 0.01
         }, GET: {
-            '/ping': 0.1
+            '/ping': 0.01
         }
     }
 });
