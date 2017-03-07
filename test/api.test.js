@@ -570,7 +570,15 @@ test('GET /packages (Search by name)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
+test('GET /packages (Search by substring name)', function (t) {
+    var query = '/packages?name=~api_test';
 
+    var testFilter = function (p) {
+       return /^api_test_/.test(p.name);
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
 
 test('GET /packages (Search by wildcard)', function (t) {
     var query = '/packages?name=api_test_*';

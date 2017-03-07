@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2015, Joyent, Inc.
+#
+
+#
+# Rsync the master in this working copy to the install on the given HN.
+#
+
+#set -o xtrace
+set -o errexit
+
+TOP=$(cd $(dirname $0)/../; pwd)
+NODE="root@$1"
+
+if [[ -z "$PAPI_ZONE" ]]; then
+    PAPI_ZONE=$(ssh $NODE "vmadm lookup -1 alias=papi0" 2>/dev/null)
+fi
+echo "PAPI_ZONE: $PAPI_ZONE"
+
+extraOpts=
+if [[ $(uname -s) != "SunOS" ]]; then
+    extraOpts="--exclude *.node --exclude build"
+else
+    # Clean node_modules everytime.
+    ssh $NODE rm -rf /zones/$PAPI_ZONE/root/opt/smartdc/papi/node_modules
+fi
+
+rsync -av ${TOP}/ \
+    $NODE:/zones/$PAPI_ZONE/root/opt/smartdc/papi/ \
+    $extraOpts \
+    --exclude .git/ \
+    --exclude /config.json \
+    --exclude /deps/ \
+    --exclude /doc/ \
+    --exclude /tools/ \
+    --exclude /tmp/ \
+
+state=$(ssh ${NODE} svcs -z ${PAPI_ZONE} -H -o state papi)
+if [[ "$state" == "maintenance" ]]; then
+    ssh ${NODE} svcadm -z ${PAPI_ZONE} clear papi
+else
+    ssh ${NODE} svcadm -z ${PAPI_ZONE} restart papi
+fi
+
