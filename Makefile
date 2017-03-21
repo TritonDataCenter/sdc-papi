@@ -25,7 +25,7 @@ NAME		:= papi
 #
 # Tools
 #
-TAP		:= ./node_modules/.bin/tap
+TAP		:= ./node_modules/.bin/tape
 
 #
 # Files

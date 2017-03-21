@@ -17,7 +17,7 @@ var fs      = require('fs');
 var path    = require('path');
 var qs      = require('querystring');
 var restify = require('restify');
-var test    = require('tap').test;
+var test    = require('tape').test;
 var util    = require('util');
 var Logger  = require('bunyan');
 var libuuid = require('libuuid');
@@ -189,7 +189,7 @@ test('POST /packages (OK)', function (t) {
             t.equal(res.statusCode, 201);
 
             checkDate(t, storedPkg);
-            t.equivalent(newPkg, storedPkg);
+            t.deepEqual(newPkg, storedPkg);
 
             var location = res.headers['location'];
             t.equal(location, '/packages/' + newPkg.uuid);
@@ -199,7 +199,7 @@ test('POST /packages (OK)', function (t) {
                 t.equal(res2.statusCode, 200);
 
                 checkDate(t, storedPkg2);
-                t.equivalent(newPkg, storedPkg2);
+                t.deepEqual(newPkg, storedPkg2);
 
                 if (postPkgs.length > 0)
                     return postPkg();
@@ -240,7 +240,7 @@ test('POST /packages/:uuid (bad fields)', function (t) {
               code: 'Invalid',
               message: 'is an unsupported attribute' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -277,7 +277,7 @@ test('POST /packages/:uuid (invalid package name)', function (t) {
                   + ' contain repeated \'-\', \'_\' or \'.\' characters'
             }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -321,7 +321,7 @@ test('POST /packages (missing required fields)', function (t) {
               code: 'Missing',
               message: 'is missing' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -355,7 +355,7 @@ test('POST /packages (empty required fields)', function (t) {
             { field: 'name', code: 'Missing', message: 'is empty' },
             { field: 'version', code: 'Missing', message: 'is empty' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -424,7 +424,7 @@ test('POST /packages (fields validation failed)', function (t) {
               message: 'must be greater or equal to 0, and less than or ' +
                   'equal to 16383' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -465,7 +465,7 @@ test('POST /packages (quota must be multiple of 1024)', function (t) {
               code: 'Invalid',
               message: 'must be a multiple of 1024' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -482,7 +482,7 @@ test('POST /packages (duplicated unique field)', function (t) {
             message: 'A package with the given UUID already exists'
         };
 
-        t.equivalent(err.body, expected);
+        t.deepEqual(err.body, expected);
         t.end();
     });
 });
@@ -504,7 +504,7 @@ test('GET /packages/:uuid (404)', function (t) {
             message: 'Package ' + badUuid + ' does not exist'
         };
 
-        t.equivalent(err.body, expected);
+        t.deepEqual(err.body, expected);
         t.end();
     });
 });
@@ -625,7 +625,7 @@ test('GET /packages (Custom invalid filter)', function (t) {
             message: 'Provided search filter is not valid'
         };
 
-        t.equivalent(err.body, expected);
+        t.deepEqual(err.body, expected);
         t.end();
     });
 });
@@ -732,7 +732,7 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
               code: 'Invalid',
               message: 'is immutable' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -759,7 +759,7 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
               code: 'Invalid',
               message: 'must only contain UUIDs' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -786,7 +786,7 @@ test('PUT /packages/:uuid (bad fields)', function (t) {
               code: 'Invalid',
               message: 'is an unsupported attribute' }
         ];
-        t.equivalent(err.body.errors, expectedErrs);
+        t.deepEqual(err.body.errors, expectedErrs);
 
         t.end();
     });
@@ -814,13 +814,13 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
 
         var newPkg = deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
-        t.equivalent(pkg, newPkg);
+        t.deepEqual(pkg, newPkg);
 
         client.get(url, function (err2, req2, res2, pkg2) {
             t.ifError(err2);
 
             checkDate(t, pkg2);
-            t.equivalent(pkg2, newPkg);
+            t.deepEqual(pkg2, newPkg);
 
             t.end();
         });
@@ -846,13 +846,13 @@ test('PUT /packages/:uuid (OK)', function (t) {
         var newPkg = deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
         delete newPkg.common_name;
-        t.equivalent(pkg, newPkg);
+        t.deepEqual(pkg, newPkg);
 
         client.get(url, function (err2, req2, res2, pkg2) {
             t.ifError(err2);
 
             checkDate(t, pkg2);
-            t.equivalent(pkg2, newPkg);
+            t.deepEqual(pkg2, newPkg);
 
             client.put(url, {
                 owner_uuids: [],
@@ -861,7 +861,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
                 t.ifError(err3);
 
                 checkDate(t, pkg3);
-                t.equivalent(pkg3, packages[0]);
+                t.deepEqual(pkg3, packages[0]);
 
                 t.end();
             });
@@ -883,7 +883,7 @@ test('PUT /packages/:uuid (404)', function (t) {
             message: 'Package ' + badUuid + ' does not exist'
         };
 
-        t.equivalent(err.body, expected);
+        t.deepEqual(err.body, expected);
         t.end();
     });
 });
@@ -900,7 +900,7 @@ test('DELETE /packages/:uuid (405)', function (t) {
             message: 'Packages cannot be deleted'
         };
 
-        t.equivalent(err.body, expected);
+        t.deepEqual(err.body, expected);
         t.end();
     });
 });
@@ -923,7 +923,7 @@ test('DELETE /packages/:uuid (404)', function (t) {
             message: 'Package ' + badUuid + ' does not exist'
         };
 
-        t.equivalent(err.body, expected);
+        t.deepEqual(err.body, expected);
         t.end();
     });
 });
@@ -1036,7 +1036,7 @@ function searchAndCheckPkgs(t, query, testFilter) {
 
         pkgs.forEach(function (p) { checkDate(t, p); });
         t.equal(+res.headers['x-resource-count'], expectedPkgs.length);
-        t.equivalent(pkgs.sort(orderPkgs), expectedPkgs.sort(orderPkgs));
+        t.deepEqual(pkgs.sort(orderPkgs), expectedPkgs.sort(orderPkgs));
 
         t.end();
     });
@@ -1050,7 +1050,7 @@ function checkPkg1(t) {
         t.equal(res.statusCode, 200);
 
         checkDate(t, pkg);
-        t.equivalent(packages[0], pkg);
+        t.deepEqual(packages[0], pkg);
 
         t.end();
     });
