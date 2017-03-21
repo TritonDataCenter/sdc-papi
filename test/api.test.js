@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2016, Joyent, Inc.
+ * Copyright (c) 2017, Joyent, Inc.
  */
 
 /*
@@ -592,6 +592,28 @@ test('GET /packages (Search by multiple fields)', function (t) {
     };
 
     searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
+test('GET /packages (Search with LDIF injection attempt)', function (t) {
+    client.get({
+        path: '/packages',
+        query: {
+            name: 'api_test_*',
+            networks: '*)(owner_uuids={\\2a}'
+        }
+    }, function (err, req, res, body) {
+        t.equal(res.statusCode, 500);
+
+        t.deepEqual(body, {
+            code: 'InternalError',
+            message: 'sdc_packages does not have indexes that support ' +
+                     '(networks=*{\\)}{\\(}owner_uuids{\\=}{\\*})'
+        });
+
+        t.end();
+    });
 });
 
 

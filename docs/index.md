@@ -384,25 +384,11 @@ Returns a list of Packages matching the specified search filter.
 
 ### Security Warning
 
-Since PAPI exposes several features of LDIF search filters, this entails that it
-does not escape any values (most importantly: strings). If you're not using
-features like '*' when querying, and you're searching for literal strings, then
-make sure to encode those strings. Here's Javascript that can do that for you:
+Since PAPI allows wildcard searches, if you want your queries to only search for
+literal strings, make sure to escape the '*' character with '{\\2a}'.
+E.g. in Javascript:
 
-    return val.replace('(',  '{\\28}').
-               replace(')',  '{\\29}').
-               replace('\\', '{\\5c}').
-               replace('*',  '{\\2a}').
-               replace('/',  '{\\2f}');
-
-If you're using values that could have potentially come from adversaries, even
-indirectly, always encode all strings (including strings in arrays). If you do
-not, an attacker could potentially sneak something like this past:
-
-    GET /packages?owner_uuids=*
-
-It's highly unlikely you want anybody other than operators to have that power.
-When in doubt, encode.
+    val = val.replace(/\*/g,  '{\\2a}');
 
 
 ### Inputs
