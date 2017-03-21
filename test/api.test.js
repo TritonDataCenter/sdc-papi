@@ -584,6 +584,18 @@ test('GET /packages (Search by wildcard)', function (t) {
 
 
 
+test('GET /packages (Search by multiple wildcard)', function (t) {
+    var query = '/packages?name=*pi_test_*';
+
+    var testFilter = function (p) {
+        return /^api_test_/.test(p.name);
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
 test('GET /packages (Search by multiple fields)', function (t) {
     var query = '/packages?name=api_test_*&owner_uuids=' + uuid();
 
