@@ -16,6 +16,7 @@
 var fs      = require('fs');
 var path    = require('path');
 var qs      = require('querystring');
+var os      = require('os');
 var restify = require('restify');
 var test    = require('tape').test;
 var util    = require('util');
@@ -38,10 +39,12 @@ var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
 // real papi if we're running in the zone.
 config.port = 8080;
 
+var pkgNamePrefix = 'papitest-api-' + os.hostname() + '-';
+
 var packages = [ {
     v: 1,
     uuid: '27543bf3-0c66-4f61-9ae4-7dda5cb4741b',
-    name: 'api_test_128',
+    name: pkgName(128),
     version: '1.0.0',
     os: 'smartos',
     max_physical_memory: 128,
@@ -72,7 +75,7 @@ var packages = [ {
 }, {
     v: 1,
     uuid: '43cedda8-f844-4a62-956a-85691fa21b36',
-    name: 'api_test_2048',
+    name: pkgName(2048),
     version: '1.0.1',
     active: false,
     cpu_cap: 300,
@@ -87,7 +90,7 @@ var packages = [ {
 }, {
     v: 1,
     uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124',
-    name: 'api_test_512',
+    name: pkgName(512),
     version: '1.0.1',
     active: true,
     cpu_cap: 300,
@@ -365,7 +368,7 @@ test('POST /packages (empty required fields)', function (t) {
 
 test('POST /packages (fields validation failed)', function (t) {
     var pkg = {
-        name: 'regular_128',
+        name: pkgName('fail-validation'),
         version: '1.0.0',
         os: 2,
         max_physical_memory: 32,
@@ -434,7 +437,7 @@ test('POST /packages (fields validation failed)', function (t) {
 
 test('POST /packages (quota must be multiple of 1024)', function (t) {
     var pkg = {
-        name: 'regular_128',
+        name: pkgName('fail-quota'),
         version: '1.0.0',
         os: 'smartos',
         max_physical_memory: 64,
@@ -561,10 +564,11 @@ test('GET /packages (Search by networks)', function (t) {
 
 
 test('GET /packages (Search by name)', function (t) {
-    var query = '/packages?name=api_test_128';
+    var name = pkgName(128);
+    var query = '/packages?name=' + name;
 
     var testFilter = function (p) {
-        return p.name === 'api_test_128';
+        return p.name === name;
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -573,10 +577,11 @@ test('GET /packages (Search by name)', function (t) {
 
 
 test('GET /packages (Search by wildcard)', function (t) {
-    var query = '/packages?name=api_test_*';
+    var name = pkgName('');
+    var query = '/packages?name=' + name + '*';
 
     var testFilter = function (p) {
-        return /^api_test_/.test(p.name);
+        return new RegExp('^' + name).test(p.name);
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -585,10 +590,11 @@ test('GET /packages (Search by wildcard)', function (t) {
 
 
 test('GET /packages (Search by multiple wildcard)', function (t) {
-    var query = '/packages?name=*pi_test_*';
+    var name = pkgName('');
+    var query = '/packages?name=*' + name.slice(1) + '*';
 
     var testFilter = function (p) {
-        return /^api_test_/.test(p.name);
+        return new RegExp('^' + name).test(p.name);
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -597,10 +603,11 @@ test('GET /packages (Search by multiple wildcard)', function (t) {
 
 
 test('GET /packages (Search by multiple fields)', function (t) {
-    var query = '/packages?name=api_test_*&owner_uuids=' + uuid();
+    var name = pkgName('');
+    var query = '/packages?name=' + name + '*&owner_uuids=' + uuid();
 
     var testFilter = function (p) {
-        return /^api_test_/.test(p.name) && !p.owner_uuids;
+        return new RegExp('^' + name).test(p.name) && !p.owner_uuids;
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -631,12 +638,13 @@ test('GET /packages (Search with LDIF injection attempt)', function (t) {
 
 
 test('GET /packages (Custom filter)', function (t) {
-    var filter = '(&(name=api_test*)(max_physical_memory>=64)' +
+    var name = pkgName('');
+    var filter = '(&(name=' + name + '*)(max_physical_memory>=64)' +
                  '(zfs_io_priority=1))';
     var query = '/packages?filter=' + qs.escape(filter);
 
     var testFilter = function (p) {
-        return /^api/.test(p.name) &&
+        return new RegExp('^' + name).test(p.name) &&
                p.max_physical_memory >= 64 &&
                p.zfs_io_priority === 1;
     };
@@ -667,11 +675,13 @@ test('GET /packages (Custom invalid filter)', function (t) {
 
 
 test('GET /packages (Custom substring filter ignoring case)', function (t) {
-    var filter = '(name:caseIgnoreSubstringsMatch:=API_TEST*)';
+    var name = pkgName('');
+    var filter = '(name:caseIgnoreSubstringsMatch:=' + name.toUpperCase() +
+                 '*)';
     var query = '/packages?filter=' + qs.escape(filter);
 
     var testFilter = function (p) {
-        return /^api_test/.test(p.name);
+        return new RegExp('^' + name).test(p.name);
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -680,11 +690,12 @@ test('GET /packages (Custom substring filter ignoring case)', function (t) {
 
 
 test('GET /packages (Custom filter ignoring case)', function (t) {
-    var filter = '(name:caseIgnoreMatch:=API_TEST_256)';
+    var name = pkgName(256);
+    var filter = '(name:caseIgnoreMatch:=' + name.toUpperCase() + ')';
     var query = '/packages?filter=' + qs.escape(filter);
 
     var testFilter = function (p) {
-        return /^api_test_256/.test(p.name);
+        return new RegExp('^' + name).test(p.name);
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -693,10 +704,12 @@ test('GET /packages (Custom filter ignoring case)', function (t) {
 
 
 test('GET /packages (Search by multiple entries per field)', function (t) {
-    var query = '/packages?name=["api_test_256","api_test_512"]';
+    var name256 = pkgName(256);
+    var name512 = pkgName(512);
+    var query = '/packages?name=["' + name256 + '","' + name512 + '"]';
 
     var testFilter = function (p) {
-        return p.name === 'api_test_256' || p.name === 'api_test_512';
+        return p.name === name256 || p.name === name512;
     };
 
     searchAndCheckPkgs(t, query, testFilter);
@@ -705,12 +718,14 @@ test('GET /packages (Search by multiple entries per field)', function (t) {
 
 
 test('GET /packages (Search by multiple entries and fields)', function (t) {
+    var name256 = pkgName(256);
+    var name512 = pkgName(512);
     var ownerUuid = '7f5501af-12da-4727-8579-625e527ed1f2';
-    var query = '/packages?name=["api_test_256","api_test_512"]' +
+    var query = '/packages?name=["' + name256 + '","' + name512 + '"]' +
                 '&owner_uuids=["' + ownerUuid + '"]';
 
     var testFilter = function (p) {
-        return (p.name === 'api_test_256' || p.name === 'api_test_512') &&
+        return (p.name === name256 || p.name === name512) &&
                p.owner_uuids && p.owner_uuids.indexOf(ownerUuid) !== -1;
     };
 
@@ -730,16 +745,16 @@ test('GET /packages (Search by empty multiple entries)', function (t) {
 
 test('PUT /packages/:uuid (immutable fields)', function (t) {
     var immutable = {
-        'name': 'regular_129',
-        'version': '1.0.1',
-        'os': 'linux',
-        'quota': 5124,
-        'max_swap': 257,
-        'max_physical_memory': 129,
-        'cpu_cap': 351,
-        'max_lwps': 1999,
-        'zfs_io_priority': 2,
-        'vcpus': 4
+        name: pkgName('immutable'),
+        version: '1.0.1',
+        os: 'linux',
+        quota: 5124,
+        max_swap: 257,
+        max_physical_memory: 129,
+        cpu_cap: 351,
+        max_lwps: 1999,
+        zfs_io_priority: 2,
+        vcpus: 4
     };
 
     client.put('/packages/' + packages[0].uuid, immutable,
@@ -1001,46 +1016,46 @@ test('teardown', function (t) {
 
 
 function cleanUp(t) {
-    var deletePkgs = packages.map(function (p) { return p.uuid; });
+    function deletePkgs(pkgs) {
+        if (pkgs.length === 0)
+            return t.end();
 
-    var deletePkg = function () {
-        var pkgUuid = deletePkgs.pop();
-        var url = '/packages/' + pkgUuid + '?force=true';
+        var pkg = pkgs.pop();
+        var url = '/packages/' + pkg.uuid + '?force=true';
 
-        client.del(url, function (err, req, res, obj) {
+        return client.del(url, function (err, req, res, obj) {
             if (err && err.statusCode !== 404)
                 t.ifError(err);
 
-            if (deletePkgs.length > 0)
-                return deletePkg();
-
-            return t.end();
+            deletePkgs(pkgs);
         });
-    };
+    }
 
-    deletePkg();
+    client.get({
+        path: '/packages?name=' + pkgName('') + '*'
+    }, function (err, req, res, pkgs) {
+        t.ifError(err);
+        deletePkgs(pkgs);
+    });
 }
 
 
 
 function checkNoPkgs(t) {
-    var checkPkgs = packages.map(function (p) { return p.uuid; });
-
-    var checkPkg = function () {
-        var pkgUuid = checkPkgs.pop();
-        var url = '/packages/' + pkgUuid;
-
-        client.get(url, function (err, req, res, obj) {
-            t.equal(err.statusCode, 404);
-
-            if (checkPkgs.length > 0)
-                return checkPkg();
-
+    function checkPkgs(pkgs) {
+        if (pkgs.length === 0)
             return t.end();
-        });
-    };
 
-    checkPkg();
+        var pkg = pkgs.pop();
+        var url = '/packages/' + pkg.uuid;
+
+        return client.get(url, function (err, req, res, obj) {
+            t.equal(err.statusCode, 404);
+            checkPkgs(pkgs);
+        });
+    }
+
+    checkPkgs(packages.map(function (p) { return p.uuid; }));
 }
 
 
@@ -1102,6 +1117,12 @@ function orderPkgs(a, b) {
     if (a.uuid < b.uuid)
         return 1;
     return -1;
+}
+
+
+
+function pkgName(suffix) {
+    return pkgNamePrefix + suffix;
 }
 
 
