@@ -598,8 +598,30 @@ Some attributes support having no values. To delete an existing value, pass in
 
 ## DeletePackage (DELETE /package/:uuid)
 
-Packages cannot be destroyed.
+Do *not* use this endpoint unless you are working in a non-production
+environment, or have checked that this will not cause problems with
+any callers (e.g. billing, which often depends on a correct record of
+packages that were used by any VMs in the past). If you're in a production
+environment and are attempting to delete a package that has *ever* been used
+by *any* VM, you're asking for trouble and are on your own...
 
+This endpoint will not delete the package unless the param force=true
+is explicitly provided.
+
+
+### Inputs
+
+| Param | Type    | Description               | Required? |
+| ------| ------- | ------------------------- | --------- |
+| force | Boolean | Whether to allow deletion | false     |
+
+
+### Responses
+
+| Code | Description       | Response       |
+| ---- | ----------------- | -------------- |
+| 204  | Package deleted   |                |
+| 405  | Request denied    | Error object   |
 
 
 
