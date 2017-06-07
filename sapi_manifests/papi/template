@@ -2,13 +2,10 @@
     "port": 80,
     "logLevel": "info",
     "moray": {
-        "url": "http://{{{MORAY_SERVICE}}}:2020",
-        "connectTimeout": 1000,
-        "retry": {
-            "retries": 3,
-            "minTimeout": 1000
+        "srvDomain": "{{{MORAY_SERVICE}}}",
+        "cueballOptions": {
+            "resolvers": [ "{{{BINDER_SERVICE}}}" ]
         },
-        "noCache": true,
         "version": 6
     },
     "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",

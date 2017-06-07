@@ -22,9 +22,10 @@ var test    = require('tape').test;
 var util    = require('util');
 var Logger  = require('bunyan');
 var libuuid = require('libuuid');
+var jsprim = require('jsprim');
+var VError = require('verror');
 
 var papi = require('../lib/papi');
-
 
 
 // If we're in the papi zone, use the papi config. Otherwise assume we're on
@@ -194,7 +195,7 @@ test('POST /packages (OK)', function (t) {
             checkDate(t, storedPkg);
             t.deepEqual(newPkg, storedPkg);
 
-            var location = res.headers['location'];
+            var location = res.headers.location;
             t.equal(location, '/packages/' + newPkg.uuid);
 
             client.get(location, function (err2, req2, res2, storedPkg2) {
@@ -275,9 +276,9 @@ test('POST /packages/:uuid (invalid package name)', function (t) {
         var expectedErrs = [
             { field: 'name',
               code: 'Invalid',
-              message: 'must match '
-                  + '/^[a-zA-Z0-9]([a-zA-Z0-9\\_\\-\\.]+)?[a-zA-Z0-9]$/ and not'
-                  + ' contain repeated \'-\', \'_\' or \'.\' characters'
+              message: 'must match ' +
+                '/^[a-zA-Z0-9]([a-zA-Z0-9\\_\\-\\.]+)?[a-zA-Z0-9]$/ and not' +
+                ' contain repeated \'-\', \'_\' or \'.\' characters'
             }
         ];
         t.deepEqual(err.body.errors, expectedErrs);
@@ -861,7 +862,7 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
 
         checkDate(t, pkg);
 
-        var newPkg = deepCopy(packages[0]);
+        var newPkg = jsprim.deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
         t.deepEqual(pkg, newPkg);
 
@@ -892,7 +893,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
 
         checkDate(t, pkg);
 
-        var newPkg = deepCopy(packages[0]);
+        var newPkg = jsprim.deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
         delete newPkg.common_name;
         t.deepEqual(pkg, newPkg);
@@ -1123,36 +1124,4 @@ function orderPkgs(a, b) {
 
 function pkgName(suffix) {
     return pkgNamePrefix + suffix;
-}
-
-
-
-/*
- * Deep copies an object. This method assumes an acyclic graph.
- */
-
-function deepCopy(obj) {
-    if (typeof (obj) !== 'object')
-        return obj;
-
-    if (obj === null)
-        return null;
-
-    var clone;
-
-    if (Array.isArray(obj)) {
-      clone = [];
-
-      for (var i = obj.length - 1; i >= 0; i--) {
-        clone[i] = deepCopy(obj[i]);
-      }
-    } else {
-      clone = {};
-
-      for (i in obj) {
-        clone[i] = deepCopy(obj[i]);
-      }
-    }
-
-    return clone;
 }

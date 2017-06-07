@@ -102,7 +102,3 @@ LOG = new Logger({
 
 // There we go!:
 run();
-
-// Increase/decrease loggers levels using SIGUSR2/SIGUSR1:
-var sigyan = require('sigyan');
-sigyan.add([LOG]);

@@ -3,12 +3,6 @@
     "logLevel": "info",
     "moray": {
         "url": "http://10.99.99.17:2020",
-        "connectTimeout": 1000,
-        "retry": {
-            "retries": 3,
-            "minTimeout": 1000
-        },
-        "noCache": true,
         "version": 6
     },
     "ufds_admin_uuid": "930896af-bf8c-48d4-885c-6573a94b1853",
