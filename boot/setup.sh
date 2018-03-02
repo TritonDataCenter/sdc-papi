@@ -7,7 +7,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
 
 export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
@@ -51,28 +51,20 @@ do
   pkg=${PACKAGES[$i]}
   name=$(echo ${pkg} | cut -d ':' -f 1)
   uuid=$(echo ${pkg} | cut -d ':' -f 8)
-  # TBD: Decide if default package should be configurable
-  # (can be changed from adminui post setup).
-  if [[ "${name}" == "sdc_128" ]]; then
-    default='true'
-  else
-    default='false'
-  fi
 
   echo "{
-    \"uuid\": \"${uuid}\",
     \"active\": true,
     \"cpu_cap\": \"$(echo ${pkg} | cut -d ':' -f 5)\",
-    \"default\": $default,
+    \"cpu_shares\": \"$(echo ${pkg} | cut -d ':' -f 5)\",
     \"max_lwps\": $(echo ${pkg} | cut -d ':' -f 6),
     \"max_physical_memory\": $(echo ${pkg} | cut -d ':' -f 2),
     \"max_swap\": $(echo ${pkg} | cut -d ':' -f 3),
     \"name\": \"${name}\",
+    \"owner_uuid\": \"${UFDS_ADMIN_UUID}\"
     \"quota\": $(echo ${pkg} | cut -d ':' -f 4),
-    \"vcpus\": 1,
+    \"uuid\": \"${uuid}\",
     \"version\": \"1.0.0\",
     \"zfs_io_priority\": $(echo ${pkg} | cut -d ':' -f 7),
-    \"owner_uuid\": \"${UFDS_ADMIN_UUID}\"
   }" >> $PACKAGES_BOOTSTRAP
 
   # Do not append a comma to the last element

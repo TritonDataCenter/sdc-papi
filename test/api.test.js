@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2017, Joyent, Inc.
+ * Copyright (c) 2018, Joyent, Inc.
  */
 
 /*
@@ -47,7 +47,6 @@ var packages = [ {
     uuid: '27543bf3-0c66-4f61-9ae4-7dda5cb4741b',
     name: pkgName(128),
     version: '1.0.0',
-    os: 'smartos',
     max_physical_memory: 128,
     quota: 5120,
     max_swap: 256,
@@ -55,13 +54,8 @@ var packages = [ {
     cpu_burst_ratio: 0.5,
     max_lwps: 2000,
     zfs_io_priority: 1,
-    default: true,
     vcpus: 1,
     active: true,
-    networks: [
-        'aefd7d3c-a4fd-4812-9dd7-24733974d861',
-        'de749393-836c-42ce-9c7b-e81072ca3a23'
-    ],
     traits: {
         bool: true,
         arr: ['one', 'two', 'three'],
@@ -71,8 +65,7 @@ var packages = [ {
     description: 'This is a package description, and should be present',
     common_name: 'API Test 128MiB',
     fss: 25,
-    billing_tag: 'ApiTest128MiB',
-    alloc_server_spread: 'random'
+    billing_tag: 'ApiTest128MiB'
 }, {
     v: 1,
     uuid: '43cedda8-f844-4a62-956a-85691fa21b36',
@@ -80,14 +73,12 @@ var packages = [ {
     version: '1.0.1',
     active: false,
     cpu_cap: 300,
-    default: true,
     max_lwps: 2000,
     max_physical_memory: 2048,
     max_swap: 4096,
     quota: 81920,
     zfs_io_priority: 50,
-    owner_uuids: ['7f5501af-12da-4727-8579-625e527ed1f2'],
-    alloc_server_spread: 'min-owner'
+    owner_uuids: ['7f5501af-12da-4727-8579-625e527ed1f2']
 }, {
     v: 1,
     uuid: '9cfe7e8b-d1c8-40a5-8e20-214d43f95124',
@@ -95,7 +86,6 @@ var packages = [ {
     version: '1.0.1',
     active: true,
     cpu_cap: 300,
-    default: false,
     max_lwps: 1000,
     max_physical_memory: 512,
     max_swap: 1024,
@@ -105,6 +95,20 @@ var packages = [ {
         '7f5501af-12da-4727-8579-625e527ed1f2',
         'c39b6d6a-1c11-4d1b-b213-174974d71b45'
     ]
+}, {
+    v: 1,
+    active: true,
+    brand: 'bhyve',
+    cpu_cap: 300,
+    max_lwps: 1000,
+    max_physical_memory: 512,
+    max_swap: 1024,
+    name: pkgName('bhyve-512'),
+    quota: 10240,
+    version: '1.0.0',
+    uuid: 'b87479f8-1ce1-11e8-8444-636ba22202b2',
+    vcpus: 2,
+    zfs_io_priority: 100
 } ];
 
 
@@ -251,12 +255,10 @@ test('POST /packages/:uuid (bad fields)', function (t) {
 });
 
 
-
 test('POST /packages/:uuid (invalid package name)', function (t) {
     var badPkg = {
         active: false,
         cpu_cap: 100,
-        default: false,
         max_lwps: 1000,
         max_physical_memory: 1024,
         max_swap: 2048,
@@ -292,10 +294,6 @@ test('POST /packages/:uuid (invalid package name)', function (t) {
 test('POST /packages (missing required fields)', function (t) {
     var pkg = {
         vcpus: 1,
-        networks: [
-            'aefd7d3c-a4fd-4812-9dd7-24733974d861',
-            'de749393-836c-42ce-9c7b-e81072ca3a23'
-        ],
         traits: {
             bool: true,
             arr: ['one', 'two', 'three'],
@@ -340,7 +338,6 @@ test('POST /packages (empty required fields)', function (t) {
         version: '',
         active: true,
         cpu_cap: 300,
-        default: false,
         max_lwps: 1000,
         max_physical_memory: 128,
         max_swap: 128,
@@ -369,22 +366,17 @@ test('POST /packages (empty required fields)', function (t) {
 
 test('POST /packages (fields validation failed)', function (t) {
     var pkg = {
+        brand: 'WcDonalds',
         name: pkgName('fail-validation'),
         version: '1.0.0',
-        os: 2,
         max_physical_memory: 32,
         quota: 512,
         max_swap: 256,
         cpu_cap: 350,
         max_lwps: 2000,
         zfs_io_priority: 100000,
-        'default': true,
         vcpus: 30,
         active: true,
-        networks: [
-            'aefd7d3c-a4fd-4812-9dd7-24733974d861',
-            'de749393-836c-42ce-9c7b-'
-        ],
         traits: {
             bool: true,
             arr: ['one', 'two', 'three'],
@@ -394,8 +386,7 @@ test('POST /packages (fields validation failed)', function (t) {
         uuid: 'invalid-uuid-for-sure',
         description: 'This is a package description, and should be present',
         common_name: 'Regular 128MiB',
-        fss: 25,
-        alloc_server_spread: 'invalid'
+        fss: 25
     };
 
     client.post('/packages', pkg, function (err, req, res, _) {
@@ -406,14 +397,10 @@ test('POST /packages (fields validation failed)', function (t) {
         t.equal(err.body.message, 'Package is invalid');
 
         var expectedErrs = [
-            { field: 'networks',
+            { field: 'brand',
               code: 'Invalid',
-              message: 'must only contain UUIDs' },
-            { field: 'os', code: 'Invalid', message: 'must be string' },
+              message: 'not WcDonalds' },
             { field: 'uuid', code: 'Invalid', message: 'must be UUID' },
-            { field: 'alloc_server_spread',
-              code: 'Invalid',
-              message: 'must be one of: min-ram, random, min-owner' },
             { field: 'max_physical_memory',
               code: 'Invalid',
               message: 'must be greater or equal to 64' },
@@ -440,14 +427,12 @@ test('POST /packages (quota must be multiple of 1024)', function (t) {
     var pkg = {
         name: pkgName('fail-quota'),
         version: '1.0.0',
-        os: 'smartos',
         max_physical_memory: 64,
         quota: 1280,
         max_swap: 256,
         cpu_cap: 350,
         max_lwps: 2000,
         zfs_io_priority: 100,
-        'default': true,
         vcpus: 30,
         active: true,
         group: 'ramones',
@@ -548,21 +533,6 @@ test('GET /packages (Search by group)', function (t) {
 
 
 
-test('GET /packages (Search by networks)', function (t) {
-    var network = packages[0].networks[1];
-    var query = '/packages?networks=' + network;
-
-    var testFilter = function (p) {
-        if (!p.networks)
-            return false;
-
-        return p.networks.indexOf(network) !== -1;
-    };
-
-    searchAndCheckPkgs(t, query, testFilter);
-});
-
-
 
 test('GET /packages (Search by name)', function (t) {
     var name = pkgName(128);
@@ -612,28 +582,6 @@ test('GET /packages (Search by multiple fields)', function (t) {
     };
 
     searchAndCheckPkgs(t, query, testFilter);
-});
-
-
-
-test('GET /packages (Search with LDIF injection attempt)', function (t) {
-    client.get({
-        path: '/packages',
-        query: {
-            name: 'api_test_*',
-            networks: '*)(owner_uuids={\\2a}'
-        }
-    }, function (err, req, res, body) {
-        t.equal(res.statusCode, 500);
-
-        t.deepEqual(body, {
-            code: 'InternalError',
-            message: 'sdc_packages does not have indexes that support ' +
-                     '(networks=*{\\)}{\\(}owner_uuids{\\=}{\\*})'
-        });
-
-        t.end();
-    });
 });
 
 
@@ -746,9 +694,9 @@ test('GET /packages (Search by empty multiple entries)', function (t) {
 
 test('PUT /packages/:uuid (immutable fields)', function (t) {
     var immutable = {
+        brand: 'kvm',
         name: pkgName('immutable'),
         version: '1.0.1',
-        os: 'linux',
         quota: 5124,
         max_swap: 257,
         max_physical_memory: 129,
@@ -767,6 +715,7 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
         t.equal(err.body.message, 'Attempt to update immutables');
 
         var expectedErrs = [
+            { field: 'brand', code: 'Invalid', message: 'is immutable' },
             { field: 'cpu_cap', code: 'Invalid', message: 'is immutable' },
             { field: 'max_lwps', code: 'Invalid', message: 'is immutable' },
             { field: 'max_physical_memory',
@@ -774,7 +723,6 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
               message: 'is immutable' },
             { field: 'max_swap', code: 'Invalid', message: 'is immutable' },
             { field: 'name', code: 'Invalid', message: 'is immutable' },
-            { field: 'os', code: 'Invalid', message: 'is immutable' },
             { field: 'quota', code: 'Invalid', message: 'is immutable' },
             { field: 'vcpus', code: 'Invalid', message: 'is immutable' },
             { field: 'version', code: 'Invalid', message: 'is immutable' },

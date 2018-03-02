@@ -7,7 +7,7 @@
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright (c) 2018, Joyent, Inc.
 -->
 
 <!--
@@ -34,7 +34,7 @@
 <stability value='Unstable' />
 
 <template>
-	<common_name><loctext xml:lang="C">Joyent SDC Packages API</loctext></common_name>
+	<common_name><loctext xml:lang="C">Joyent Triton Packages API</loctext></common_name>
 </template>
 
 </service>

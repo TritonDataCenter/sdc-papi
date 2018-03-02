@@ -1,0 +1,110 @@
+{
+  "active": {
+    "type": "boolean",
+    "index": true,
+    "required": true
+  },
+  "billing_tag": {
+    "type": "string",
+    "index": true
+  },
+  "brand": {
+    "immutable": true,
+    "index": true,
+    "type": "string"
+  },
+  "created_at": {
+    "type": "date",
+    "index": true
+  },
+  "cpu_cap": {
+    "type": "number",
+    "index": true,
+    "immutable": true
+  },
+  "cpu_shares": {
+    "type": "number",
+    "index": true
+  },
+  "description": {
+    "type": "string",
+    "index": true
+  },
+  "fss": {
+    "type": "number",
+    "index": true
+  },
+  "group": {
+    "type": "string",
+    "index": true
+  },
+  "max_lwps": {
+    "type": "number",
+    "index": true,
+    "required": true,
+    "immutable": true
+  },
+  "max_physical_memory": {
+    "type": "number",
+    "index": true,
+    "required": true,
+    "immutable": true
+  },
+  "max_swap": {
+    "type": "number",
+    "index": true,
+    "required": true,
+    "immutable": true
+  },
+  "name": {
+    "type": "string",
+    "index": true,
+    "required": true,
+    "immutable": true
+  },
+  "owner_uuids": {
+    "type": "[uuid]",
+    "index": true
+  },
+  "parent": {
+    "type": "string",
+    "index": true
+  },
+  "quota": {
+    "type": "number",
+    "index": true,
+    "required": true,
+    "immutable": true
+  },
+  "traits": {
+    "type": "object",
+    "index": false
+  },
+  "updated_at": {
+    "type": "date",
+    "index": true
+  },
+  "uuid": {
+    "type": "uuid",
+    "unique": true,
+    "required": true,
+    "immutable": true
+  },
+  "vcpus": {
+    "type": "number",
+    "index": true,
+    "immutable": true
+  },
+  "version": {
+    "type": "string",
+    "index": true,
+    "required": true,
+    "immutable": true
+  },
+  "zfs_io_priority": {
+    "type": "number",
+    "index": true,
+    "required": true,
+    "immutable": true
+  }
+}

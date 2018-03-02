@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2018, Joyent, Inc.
  */
 
 /*
@@ -13,15 +13,17 @@
  * file, and then loads up the API.
  */
 
-var restify = require('restify');
-var Logger = require('bunyan');
-var nopt = require('nopt');
+var bunyan = require('bunyan');
+var dashdash = require('dashdash');
 var path = require('path');
-var papi = require('./lib/papi');
+var restify = require('restify');
+
+var PAPI = require('./lib/papi');
 
 var DEFAULT_CFG = __dirname + '/etc/config.json';
 
 var LOG;
+var NAME = 'PAPI'
 var PARSED;
 
 var opts = {
@@ -66,39 +68,42 @@ function usage(code, message) {
 }
 
 
+function main() {
+    var papi;
 
-/*
- * Fire up HTTP server
- */
+    vasync.pipeline({
+        arg: {},
+        funcs: [
+            function _loadCmdline(config, cb) {
+                cb();
+            },
+            function _loadConfig(config, cb) {
+                cb();
+            },
+            function _createLogger(config, cb) {
+                config.log = new bunyan({
+                    level: (config.log_level ? 'trace' : info),
+                    name: NAME,
+                    serializers: restify.bunyan.serializers,
+                    stream: process.stderr
+                });
+                cb();
+            },
+            function _loadBackend(config, cb) {
+                cb();
+            },
+            function _createServer(config, cb) {
+                papi = new PAPI(config);
+                cb();
+            }
+        ]
+    }, function _startupComplete(err) {
+        assert.ifError(err, 'startup failed');
+        assert.object(papi, 'papi');
 
-function run() {
-    return papi.createServer({
-        config: PARSED.file || DEFAULT_CFG,
-        overrides: PARSED,
-        log: LOG
-    }, function (err, server) {
-        if (err) {
-            LOG.error(err, 'failed to start server');
-            process.abort();
-        }
-
-        LOG.info('Packages API listening at %s', server.url);
+        // Run the server we just setup.
+        papi.run();
     });
 }
 
-///--- Mainline
-
-PARSED = nopt(opts, shortOpts, process.argv, 2);
-if (PARSED.help) {
-    usage(0);
-}
-
-LOG = new Logger({
-    level: (PARSED.debug ? 'trace' : 'info'),
-    name: 'PackagesAPI',
-    stream: process.stderr,
-    serializers: restify.bunyan.serializers
-});
-
-// There we go!:
-run();
+main();

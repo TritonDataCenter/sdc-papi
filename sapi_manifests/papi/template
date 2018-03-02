@@ -26,6 +26,11 @@
     },
     "bucket": "sdc_packages",
     "schema": {
+        "brand": {
+            "immutable": true,
+            "index": true,
+            "type": "string"
+        },
         "uuid": {
             "type": "uuid",
             "unique": true,
@@ -66,10 +71,6 @@
             {{/IGNORE_CPU_CAP}}
             "immutable": true
         },
-        "default": {
-            "type": "boolean",
-            "index": false
-        },
         "group": {
             "type": "string",
             "index": true
@@ -96,28 +97,11 @@
             "required": true,
             "immutable": true
         },
-        "common_name": {
-            "type": "string",
-            "index": true
-        },
         "quota": {
             "type": "number",
             "index": true,
             "required": true,
             "immutable": true
-        },
-        "networks": {
-            "type": "[uuid]",
-            "index": true
-        },
-        "os": {
-            "type": "string",
-            "index": true,
-            "immutable": true
-        },
-        "min_platform": {
-            "type": "object",
-            "index": false
         },
         "parent": {
             "type": "string",
@@ -137,14 +121,6 @@
             "type": "number",
             "index": true
         },
-        "cpu_burst_ratio": {
-            "type": "double",
-            "index": true
-        },
-        "ram_ratio": {
-            "type": "double",
-            "index": true
-        },
         "created_at": {
             "type": "date",
             "index": true
@@ -156,9 +132,6 @@
         "billing_tag": {
             "type": "string",
             "index": true
-        },
-        "alloc_server_spread": {
-            "type": "string"
         }
     }
 }
