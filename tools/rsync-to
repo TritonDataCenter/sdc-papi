@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2018, Joyent, Inc.
+#
+
+#
+# Rsync the master in this working copy to the install on the given HN.
+#
+
+if [[ -n "$TRACE" ]]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+
+TOP=$(cd $(dirname $0)/../; pwd)
+NODE="root@$1"
+
+if [[ -z "$PAPI_ZONE" ]]; then
+    PAPI_ZONE=$(ssh $NODE "vmadm lookup -1 alias=~^papi" 2>/dev/null)
+fi
+echo "PAPI_ZONE: $PAPI_ZONE"
+
+extraOpts=
+if [[ $(uname -s) != "SunOS" ]]; then
+    extraOpts="--exclude *.node --exclude build"
+else
+    # Clean node_modules everytime.
+    ssh $NODE rm -rf /zones/$PAPI_ZONE/root/opt/smartdc/papi/node_modules
+fi
+
+rsync -av ${TOP}/ \
+    $NODE:/zones/$PAPI_ZONE/root/opt/smartdc/papi/ \
+    $extraOpts \
+    --exclude .git/ \
+    --exclude .gitignore \
+    --exclude .gitmodules \
+    --exclude /boot/ \
+    --exclude /deps/ \
+    --exclude /docs/ \
+    --exclude Makefile \
+    --exclude /tools/
+
+rsync -av ${TOP}/boot/ \
+    $NODE:/zones/$PAPI_ZONE/root/opt/smartdc/boot/ \
+    $extraOpts
+
+# disable errexit because grep exits non-zero when it doesn't find the error
+set +o errexit
+
+ssh ${NODE} \
+    "svcadm -z ${PAPI_ZONE} clear papi 2>&1 || svcadm -z ${PAPI_ZONE} restart papi" \
+    | grep -v "is not in a maintenance or degraded state."
+
+ssh ${NODE} \
+    "svcadm -z ${PAPI_ZONE} clear config-agent 2>&1 || svcadm -z ${PAPI_ZONE} restart config-agent" \
+    | grep -v "is not in a maintenance or degraded state."
+

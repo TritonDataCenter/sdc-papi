@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2017, Joyent, Inc.
+ * Copyright (c) 2018, Joyent, Inc.
  */
 
 /*
@@ -17,12 +17,13 @@ var fs      = require('fs');
 var path    = require('path');
 var qs      = require('querystring');
 var os      = require('os');
+var util    = require('util');
+
+var jsprim = require('jsprim');
+var libuuid = require('libuuid');
+var Logger  = require('bunyan');
 var restify = require('restify');
 var test    = require('tape').test;
-var util    = require('util');
-var Logger  = require('bunyan');
-var libuuid = require('libuuid');
-var jsprim = require('jsprim');
 var VError = require('verror');
 
 var papi = require('../lib/papi');
@@ -32,7 +33,7 @@ var papi = require('../lib/papi');
 // someone's laptop and they're using the default COAL IP addresses.
 var cfgFile = path.resolve(__dirname, '../etc/config.json');
 cfgFile = fs.existsSync(cfgFile) ? cfgFile :
-               path.resolve(__dirname, '../etc/config.test.json');
+    path.resolve(__dirname, '../etc/config.test.json');
 
 var config = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
 
@@ -105,6 +106,20 @@ var packages = [ {
         '7f5501af-12da-4727-8579-625e527ed1f2',
         'c39b6d6a-1c11-4d1b-b213-174974d71b45'
     ]
+}, {
+    v: 1,
+    active: true,
+    brand: 'bhyve',
+    cpu_cap: 300,
+    max_lwps: 1000,
+    max_physical_memory: 512,
+    max_swap: 1024,
+    name: pkgName('bhyve-512'),
+    quota: 10240,
+    version: '1.0.0',
+    uuid: 'b87479f8-1ce1-11e8-8444-636ba22202b2',
+    vcpus: 2,
+    zfs_io_priority: 100
 } ];
 
 
@@ -369,6 +384,7 @@ test('POST /packages (empty required fields)', function (t) {
 
 test('POST /packages (fields validation failed)', function (t) {
     var pkg = {
+        brand: 'WcDonalds',
         name: pkgName('fail-validation'),
         version: '1.0.0',
         os: 2,
@@ -414,6 +430,9 @@ test('POST /packages (fields validation failed)', function (t) {
             { field: 'alloc_server_spread',
               code: 'Invalid',
               message: 'must be one of: min-ram, random, min-owner' },
+            { field: 'brand',
+              code: 'Invalid',
+              message: 'must be one of: bhyve, joyent, joyent-minimal, kvm, lx' },
             { field: 'max_physical_memory',
               code: 'Invalid',
               message: 'must be greater or equal to 64' },
