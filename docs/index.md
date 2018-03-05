@@ -1,5 +1,5 @@
 ---
-title: SDC 7 Package API
+title: Triton Package API
 markdown2extras: tables, code-friendly
 apisections: PackageObjects, Packages, Ping, Changelog
 ---
@@ -10,22 +10,19 @@ apisections: PackageObjects, Packages, Ping, Changelog
 -->
 
 <!--
-    Copyright (c) 2016, Joyent, Inc.
+    Copyright (c) 2018, Joyent, Inc.
 -->
 
-# SDC 7 Package API
+# Triton Package API
 
-The specifications used by SDC internally to create a machine from a given image
-are called packages, and are referred to as packages by all the APIs. For
-example, packages can specify the amount of RAM and CPU a new machine will use.
-The word 'packages' is independent of the name chosen by marketing for the
-outside world.
+The collections of properties used by Triton internally to create a VM are
+called "packages", and are referred to as packages by all the other APIs. For
+example, packages can specify the amount of RAM and CPU a new machine will use,
+and what the disk quota will be.
 
 Some of the package attributes are used by `vmadm` to create or resize machines.
 Please refer to the [vmadm man page](https://github.com/joyent/smartos-live/blob/master/src/vm/man/vmadm.1m.md#properties)
 to review the meaning of these properties for the machines.
-
-
 
 
 # Package objects
@@ -35,55 +32,55 @@ example of a package:
 
 
     {
-        v: 1,
-        uuid: "7fc87f43-2def-4e6f-9f8c-980b0385b36e",
         active: true,
         cpu_cap: 25,
-        group: "Standard",
+        cpu_shares: 25
         description: "Micro 0.25 GB RAM 0.125 CPUs 16 GB Disk",
+        group: "Standard",
         max_lwps: 4000,
         max_physical_memory: 256,
         max_swap: 512,
         name: "g3-standard-0.25-smartos",
-        common_name: "Standard 0.25",
-        quota: 16384,
         networks: ["1e7bb0e1-25a9-43b6-bb19-f79ae9540b39", "193d6804-256c-4e89-a4cd-46f045959993"],
+        quota: 16384,
+        uuid: "7fc87f43-2def-4e6f-9f8c-980b0385b36e",
+        v: 1,
         version: "1.0.0",
-        zfs_io_priority: 100,
-        fss: 25,
-        cpu_burst_ratio: 0.5,
-        ram_ratio: 1.995012469
+        zfs_io_priority: 100
     }
 
 
-| Attribute                                           | Required  | Unique | Immutable | Type    | Explanation                                                                                                |
-| --------------------------------------------------- | --------- | ------ | --------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| [active](#package-active)                           | true      |        |           | boolean | Whether it can currently be used for provisioning.                                                         |
-| [billing_tag](#package-billing_tag)                 |           |        |           | string  | Arbitrary tag that can be used by ops for billing purposes; it has no intrinsic meaning to SDC.            |
-| [common_name](#package-common_name)                 |           |        |           | string  | Name displayed in the Portal.                                                                              |
-| cpu_burst_ratio                                     |           |        |           | float   | Typically computed value. See below for more.                                                              |
-| [cpu_cap](#package-cpu_cap)                         | sometimes |        | true      | integer | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
-| [default](#package-default)                         |           |        |           | boolean | **DEPRECATED** Whether this is the default package of this name through the SDC 6.5 API                    |
-| [description](#package-description)                 |           |        |           | string  | Human description of this package.                                                                         |
-| [fss](#package-fss)                                 |           |        |           | integer | CPU shares for a VM. This operates relative to other machines on a CN. (also known as cpu_shares)          |
-| [group](#package-group)                             |           |        |           | string  | Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name.    |
-| [max_lwps](#package-max_lwps)                       | true      |        | true      | integer | Max number of processes allowed                                                                            |
-| [max_physical_memory](#package-max_physical_memory) | true      |        | true      | integer | Max RAM in MiB.                                                                                            |
-| [max_swap](#package-max_swap)                       | true      |        | true      | integer | Max swap in MiB.                                                                                           |
-| [min_platform](#package-min_platform)               |           |        |           | hash    | Minimum version(s) of OS platforms that this package can use.                                              |
-| [name](#package-name)                               | true      |        | true      | string  | Name of package in API. See below for details on valid names.                                              |
-| [networks](#package-networks)                       |           |        |           | array   | UUIDs of networks that the machine requires access to.                                                     |
-| [os](#package-os)                                   |           |        | true      | string  | Operating system for this package.                                                                         |
-| [owner_uuids](#package-owner_uuids)                 |           |        |           | array   | UUIDs of package owners.                                                                                   |
-| [parent](#package-parent)                           |           |        |           | string  | `name` of instance this was cloned from. Useful if package is created from another package for a customer. |
-| [quota](#package-quota)                             | true      |        | true      | integer | Disk size in MiB. Must be a multiple of 1024.                                                              |
-| ram_ratio                                           |           |        |           | float   | Typically computed value. See below for more.                                                              |
-| [traits](#package-traits)                           |           |        |           | hash    | Set of traits for provisioning to servers. See DAPI docs for details on traits.                            |
-| [uuid](#package-uuid)                               | true      | true   | true      | uuid    | Package identifier.                                                                                        |
-| [v](#package-v)                                     |           |        |           | integer | API version of PAPI.                                                                                       |
-| [version](#package-version)                         | true      |        | true      | string  | Semver version number.                                                                                     |
-| [vcpus](#package-vcpus)                             | sometimes |        | true      | integer | Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                   |
-| [zfs_io_priority](#package-zfs_io_priority)         | true      |        | true      | integer | ZFS I/O priority. This operates relative to other machines on a CN, determining which get I/O first.       |
+## Attributes
+
+| Attribute                                           | Required  | Unique | Immutable | Type    | Added In | Explanation                                                                                                |
+| --------------------------------------------------- | --------- | ------ | --------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| [active](#package-active)                           | true      |        |           | boolean |          | Whether it can currently be used for provisioning.                                                         |
+| [billing_tag](#package-billing_tag)                 |           |        |           | string  |          | Arbitrary tag that can be used by ops for billing purposes; it has no intrinsic meaning to Triton.         |
+| [brand](#package-brand)                             |           |        | true      | string  |   v7.1.0 | Force this brand for zones using this package, one of: 'bhyve', 'joyent', 'joyent-minimal', 'kvm', 'lx'    |
+| [common_name](#package-common_name)                 |           |        |           | string  |          | Name displayed in the Portal.                                                                              |
+| cpu_burst_ratio                                     |           |        |           | float   |          | Typically computed value. See below for more.                                                              |
+| [cpu_cap](#package-cpu_cap)                         | sometimes |        | true      | integer |          | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
+| [default](#package-default)                         |           |        |           | boolean |          | **DEPRECATED** Whether this is the default package of this name through the SDC 6.5 API                    |
+| [description](#package-description)                 |           |        |           | string  |          | Human description of this package.                                                                         |
+| [fss](#package-fss)                                 |           |        |           | integer |          | CPU shares for a VM. This operates relative to other machines on a CN. (also known as cpu_shares)          |
+| [group](#package-group)                             |           |        |           | string  |          | Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name.    |
+| [max_lwps](#package-max_lwps)                       | true      |        | true      | integer |          | Max number of processes allowed                                                                            |
+| [max_physical_memory](#package-max_physical_memory) | true      |        | true      | integer |          | Max RAM in MiB.                                                                                            |
+| [max_swap](#package-max_swap)                       | true      |        | true      | integer |          | Max swap in MiB.                                                                                           |
+| [min_platform](#package-min_platform)               |           |        |           | hash    |          | Minimum version(s) of OS platforms that this package can use.                                              |
+| [name](#package-name)                               | true      |        | true      | string  |          | Name of package in API. See below for details on valid names.                                              |
+| [networks](#package-networks)                       |           |        |           | array   |          | UUIDs of networks that the machine requires access to.                                                     |
+| [os](#package-os)                                   |           |        | true      | string  |          | Operating system for this package.                                                                         |
+| [owner_uuids](#package-owner_uuids)                 |           |        |           | array   |          | UUIDs of package owners.                                                                                   |
+| [parent](#package-parent)                           |           |        |           | string  |          | `name` of instance this was cloned from. Useful if package is created from another package for a customer. |
+| [quota](#package-quota)                             | true      |        | true      | integer |          | Disk size in MiB. Must be a multiple of 1024.                                                              |
+| ram_ratio                                           |           |        |           | float   |          | Typically computed value. See below for more.                                                              |
+| [traits](#package-traits)                           |           |        |           | hash    |          | Set of traits for provisioning to servers. See DAPI docs for details on traits.                            |
+| [uuid](#package-uuid)                               | true      | true   | true      | uuid    |          | Package identifier.                                                                                        |
+| [v](#package-v)                                     |           |        |           | integer |          | API version of PAPI.                                                                                       |
+| [version](#package-version)                         | true      |        | true      | string  |          | Semver version number.                                                                                     |
+| [vcpus](#package-vcpus)                             | sometimes |        | true      | integer |          | Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                   |
+| [zfs_io_priority](#package-zfs_io_priority)         | true      |        | true      | integer |          | ZFS I/O priority. This operates relative to other machines on a CN, determining which get I/O first.       |
 
 
 ## Package: active
@@ -97,6 +94,20 @@ If true, this package can be used for provisioning, otherwise not.
 
 An arbitrary string that can be used by operators for billing purposes. This is
 an opaque string, where no special meaning is enforced by SDC.
+
+## Package: brand
+
+Added In: v7.1.0
+
+This optional parameter ties a package to a specific zone brand. The brand is
+what's used to determine which type of virtualization to use for the instance.
+Most commonly this should be set to one of: 'bhyve' or 'kvm' when a datacenter
+supports both types of virtualization and a package is being used for one or the
+other.
+
+The value must be one of: 'bhyve', 'joyent', 'joyent-minimal', 'kvm', 'lx'.
+
+    "brand": "kvm"
 
 
 ## Package: common_name

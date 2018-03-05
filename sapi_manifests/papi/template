@@ -6,7 +6,7 @@
         "cueballOptions": {
             "resolvers": [ "{{{BINDER_SERVICE}}}" ]
         },
-        "version": 6
+        "version": 7
     },
     "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",
     "first_boot": {{{SERVICE_IS_FIRST_BOOT}}},
@@ -26,6 +26,10 @@
     },
     "bucket": "sdc_packages",
     "schema": {
+        "brand": {
+            "index": true,
+            "type": "string"
+        },
         "uuid": {
             "type": "uuid",
             "unique": true,
