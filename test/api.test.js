@@ -432,7 +432,8 @@ test('POST /packages (fields validation failed)', function (t) {
               message: 'must be one of: min-ram, random, min-owner' },
             { field: 'brand',
               code: 'Invalid',
-              message: 'must be one of: bhyve, joyent, joyent-minimal, kvm, lx' },
+              message:
+                'must be one of: bhyve, joyent, joyent-minimal, kvm, lx' },
             { field: 'max_physical_memory',
               code: 'Invalid',
               message: 'must be greater or equal to 64' },
