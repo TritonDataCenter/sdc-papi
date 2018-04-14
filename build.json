@@ -1,0 +1,11 @@
+{
+    "image": "18b094b0-eb01-11e5-80c1-175dac7ddf02",
+    "name": "papi",
+    "packages": [
+        "coreutils",
+        "curl",
+        "gsed",
+        "patch",
+        "sudo"
+    ]
+}
