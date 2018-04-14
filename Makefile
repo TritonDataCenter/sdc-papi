@@ -148,6 +148,7 @@ image: release_dir
 	(cd $(RELSTAGEDIR)/root/opt/smartdc; tar -jxvf /tmp/config-agent.tbz2 && rm /tmp/config-agent.tbz2)
 	curl -o /tmp/registrar.tbz2 https://us-east.manta.joyent.com/Joyent_Dev/public/builds/registrar/master-20180223T204731Z/registrar/registrar-pkg-master-20180223T204731Z-g462748a.tar.bz2
 	(cd $(RELSTAGEDIR); tar -jxvf /tmp/registrar.tbz2 && rm /tmp/registrar.tbz2)
+	$(ROOT)/node_modules/buildymcbuildface/lib/imgadm/sbin/imgadm sources -a https://updates.joyent.com
 	$(ROOT)/node_modules/buildymcbuildface/bin/build \
 	    -i $(IMAGE_UUID) \
 	    -d $(RELSTAGEDIR)/root \
