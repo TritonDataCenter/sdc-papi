@@ -23,7 +23,7 @@ var jsprim = require('jsprim');
 var libuuid = require('libuuid');
 var Logger  = require('bunyan');
 var restify = require('restify');
-var test    = require('tape').test;
+var test    = require('@smaller/tap').test;
 var VError = require('verror');
 
 var papi = require('../lib/papi');
