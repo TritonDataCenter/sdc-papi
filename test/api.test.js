@@ -17,14 +17,12 @@ var fs      = require('fs');
 var path    = require('path');
 var qs      = require('querystring');
 var os      = require('os');
-var util    = require('util');
 
 var jsprim = require('jsprim');
 var libuuid = require('libuuid');
 var Logger  = require('bunyan');
 var restify = require('restify');
 var test    = require('@smaller/tap').test;
-var VError = require('verror');
 
 var papi = require('../lib/papi');
 
@@ -141,7 +139,7 @@ test('setup', function (t) {
         log: log,
         overrides: config,
         test: true
-    }, function (err, s) {
+    }, function (_err, s) {
         server  = s;
         backend = server.backend;
 
@@ -247,7 +245,7 @@ test('POST /packages/:uuid (bad fields)', function (t) {
         foobarbaz: true  // unrecognised
     };
 
-    client.post('/packages', badPkg, function (err, req, res, pkg) {
+    client.post('/packages', badPkg, function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -281,7 +279,7 @@ test('POST /packages/:uuid (invalid package name)', function (t) {
         zfs_io_priority: 100
     };
 
-    client.post('/packages', badPkg, function (err, req, res, pkg) {
+    client.post('/packages', badPkg, function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -497,7 +495,7 @@ test('POST /packages (quota must be multiple of 1024)', function (t) {
 
 
 test('POST /packages (duplicated unique field)', function (t) {
-    client.post('/packages', packages[0], function (err, req, res, pkg) {
+    client.post('/packages', packages[0], function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -512,6 +510,45 @@ test('POST /packages (duplicated unique field)', function (t) {
 });
 
 
+test('POST /packages (VCPUS exceeding MAX value)', function (t) {
+    var pkg = {
+        name: pkgName('fail-max-cpu'),
+        version: '1.0.0',
+        os: 'smartos',
+        max_physical_memory: 64,
+        quota: 1024,
+        max_swap: 256,
+        cpu_cap: 350,
+        max_lwps: 2000,
+        zfs_io_priority: 100,
+        'default': true,
+        vcpus: 50,
+        active: true,
+        group: 'ramones',
+        uuid: 'ebb58a8c-b77e-4559-bbf0-19ebd67973f0',
+        description: 'This is a package description, and should be present',
+        common_name: 'Regular 128MiB',
+        fss: 25
+    };
+
+    client.post('/packages', pkg, function (err, req, res, _) {
+        t.ok(err);
+        t.equal(res.statusCode, 409);
+
+        t.equal(err.body.code, 'InvalidArgument');
+        t.equal(err.body.message, 'Package is invalid');
+
+        var expectedErrs = [ {
+            field: 'vcpus',
+            code: 'Invalid',
+            message: 'must be greater or equal to 1, and less or equal to 48'
+        }];
+        t.deepEqual(err.body.errors, expectedErrs);
+
+        t.end();
+    });
+});
+
 
 test('GET /packages/:uuid (OK)', checkPkg1);
 
@@ -520,7 +557,7 @@ test('GET /packages/:uuid (OK)', checkPkg1);
 test('GET /packages/:uuid (404)', function (t) {
     var badUuid = uuid();
 
-    client.get('/packages/' + badUuid, function (err, req, res, pkg) {
+    client.get('/packages/' + badUuid, function (err, req, res, _pkg) {
         t.equal(res.statusCode, 404);
 
         var expected = {
@@ -643,7 +680,7 @@ test('GET /packages (Search with LDIF injection attempt)', function (t) {
             name: 'api_test_*',
             networks: '*)(owner_uuids={\\2a}'
         }
-    }, function (err, req, res, body) {
+    }, function (_err, req, res, body) {
         t.equal(res.statusCode, 500);
 
         t.deepEqual(body, {
@@ -756,7 +793,7 @@ test('GET /packages (Search by multiple entries and fields)', function (t) {
 
 
 test('GET /packages (Search by empty multiple entries)', function (t) {
-    client.get('/packages?name=[]', function (err, req, res, _) {
+    client.get('/packages?name=[]', function (_err, req, res, _) {
         t.equal(res.statusCode, 404);
         t.end();
     });
@@ -779,7 +816,7 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
     };
 
     client.put('/packages/' + packages[0].uuid, immutable,
-        function (err, req, res, pkg) {
+        function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -817,7 +854,7 @@ test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
 test('PUT /packages/:uuid (validation failed)', function (t) {
     client.put('/packages/' + packages[0].uuid, {
         owner_uuids: ['this-is-not-a-valid-uuid']
-    }, function (err, req, res, pkg) {
+    }, function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -844,7 +881,7 @@ test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
 test('PUT /packages/:uuid (bad fields)', function (t) {
     client.put('/packages/' + packages[0].uuid, {
         foobarbaz: 21
-    }, function (err, req, res, pkg) {
+    }, function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 409);
 
@@ -944,7 +981,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
 test('PUT /packages/:uuid (404)', function (t) {
     var badUuid = uuid();
 
-    client.put('/packages/' + badUuid, {}, function (err, req, res, pkg) {
+    client.put('/packages/' + badUuid, {}, function (err, req, res, _pkg) {
         t.ok(err);
         t.equal(res.statusCode, 404);
 
@@ -1044,7 +1081,7 @@ function cleanUp(t) {
         var pkg = pkgs.pop();
         var url = '/packages/' + pkg.uuid + '?force=true';
 
-        return client.del(url, function (err, req, res, obj) {
+        return client.del(url, function (err, req, res, _obj) {
             if (err && err.statusCode !== 404)
                 t.ifError(err);
 
@@ -1070,7 +1107,7 @@ function checkNoPkgs(t) {
         var pkg = pkgs.pop();
         var url = '/packages/' + pkg.uuid;
 
-        return client.get(url, function (err, req, res, obj) {
+        return client.get(url, function (err, req, res, _obj) {
             t.equal(err.statusCode, 404);
             checkPkgs(pkgs);
         });
