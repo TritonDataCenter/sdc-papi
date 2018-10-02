@@ -20,3 +20,10 @@ Packages API is an HTTP interface to packages used for provisioning.
 ## Testing
 
 Just run `./test/runtests` from within the PAPI VM.
+
+Note that every package needed by the tests cases will be created and removed
+by the test suite setup/teardown.
+
+The packages required to test other Triton components, like CloudAPI, can be
+created using `sdcadm post-setup dev-sample-data` from Triton's Headnode Global
+Zone.
