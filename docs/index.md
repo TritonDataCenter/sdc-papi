@@ -58,11 +58,11 @@ example of a package:
 | [billing_tag](#package-billing_tag)                 |           |        |           | string  |          | Arbitrary tag that can be used by ops for billing purposes; it has no intrinsic meaning to Triton.         |
 | [brand](#package-brand)                             |           |        | true      | string  |   v7.1.0 | Force this brand for zones using this package, one of: 'bhyve', 'joyent', 'joyent-minimal', 'kvm', 'lx'    |
 | [common_name](#package-common_name)                 |           |        |           | string  |          | Name displayed in the Portal.                                                                              |
-| cpu_burst_ratio                                     |           |        |           | float   |          | Typically computed value. See below for more.                                                              |
+| `cpu_burst_ratio`                                   |           |        |           | float   |          | Typically computed value. See below for more.                                                              |
 | [cpu_cap](#package-cpu_cap)                         | sometimes |        | true      | integer |          | Cap on how much CPU a machine can use. 100 = one core, 350 = 3.5 cores, etc.                               |
 | [default](#package-default)                         |           |        |           | boolean |          | **DEPRECATED** Whether this is the default package of this name through the SDC 6.5 API                    |
 | [description](#package-description)                 |           |        |           | string  |          | Human description of this package.                                                                         |
-| [fss](#package-fss)                                 |           |        |           | integer |          | CPU shares for a VM. This operates relative to other machines on a CN. (also known as cpu_shares)          |
+| [fss](#package-fss)                                 |           |        |           | integer |          | CPU shares for a VM. This operates relative to other machines on a CN. (also known as `cpu_shares`)        |
 | [group](#package-group)                             |           |        |           | string  |          | Group of associated packages. E.g. High CPU, High Memory, High Storage, High IO or the customer's name.    |
 | [max_lwps](#package-max_lwps)                       | true      |        | true      | integer |          | Max number of processes allowed                                                                            |
 | [max_physical_memory](#package-max_physical_memory) | true      |        | true      | integer |          | Max RAM in MiB.                                                                                            |
@@ -74,13 +74,15 @@ example of a package:
 | [owner_uuids](#package-owner_uuids)                 |           |        |           | array   |          | UUIDs of package owners.                                                                                   |
 | [parent](#package-parent)                           |           |        |           | string  |          | `name` of instance this was cloned from. Useful if package is created from another package for a customer. |
 | [quota](#package-quota)                             | true      |        | true      | integer |          | Disk size in MiB. Must be a multiple of 1024.                                                              |
-| ram_ratio                                           |           |        |           | float   |          | Typically computed value. See below for more.                                                              |
+| `ram_ratio`                                         |           |        |           | float   |          | Typically computed value. See below for more.                                                              |
 | [traits](#package-traits)                           |           |        |           | hash    |          | Set of traits for provisioning to servers. See DAPI docs for details on traits.                            |
 | [uuid](#package-uuid)                               | true      | true   | true      | uuid    |          | Package identifier.                                                                                        |
 | [v](#package-v)                                     |           |        |           | integer |          | API version of PAPI.                                                                                       |
 | [version](#package-version)                         | true      |        | true      | string  |          | Semver version number.                                                                                     |
 | [vcpus](#package-vcpus)                             | sometimes |        | true      | integer |          | Number of cpus to show, between 1 - 64. Required during provisioning if `type` == 'kvm'.                   |
 | [zfs_io_priority](#package-zfs_io_priority)         | true      |        | true      | integer |          | ZFS I/O priority. This operates relative to other machines on a CN, determining which get I/O first.       |
+| [flexible_disk](#package-flexible_disk)             | sometimes |        |           | boolean |   v7.2.0 | If set to `true` the package's `quota` reflects the amount of space available for all disks                |
+| [disks](#package-flexible_disk)                     |           |        |           | hash    |   v7.2.0 | The `size` for each package disk. Allowed when `flexible_disk` = `true`                                    |
 
 
 ## Package: active
@@ -125,7 +127,7 @@ core, 350 = 3.5 cores, and so forth.
 
     "cpu_cap": 1600
 
-cpu_cap is required by default, but can be made optional by setting
+`cpu_cap` is required by default, but can be made optional by setting
 `IGNORE_CPU_CAP` in papi's sapi metadata to boolean "true". See more details and
 *important warnings* in the "SAPI Configuration" section below.
 
@@ -150,7 +152,7 @@ Sets a limit on the number of fair share scheduler (FSS) CPU shares for a VM.
 This value is relative, so a value only has meaning in relation to other VMs on
 the same CN. If one VM has a value 2048 and one has a value 1024, the VM with
 2048 should expect to get more time from the scheduler. The rest of SDC calls
-this value 'cpu_shares'.
+this value `cpu_shares`.
 
 For some more information, see also references to 'cpu-shares' in the [SmartOS
 zonecfg(1M) man page.](https://smartos.org/man/1M/zonecfg)
@@ -204,8 +206,8 @@ Name displayed through the API.
 
     "name": "g3-standard-0.25-smartos"
 
-Must match /^[a-zA-Z0-9]([a-zA-Z0-9\_\-\.]+)?[a-zA-Z0-9]$/ and not have
-consecutive '_', '-' or '.' characters.
+Must match `/^[a-zA-Z0-9]([a-zA-Z0-9\_\-\.]+)?[a-zA-Z0-9]$/` and not have
+consecutive `_`, `-` or `.` characters.
 
 
 ## Package: networks
@@ -303,12 +305,75 @@ same name, but different versions.
 ## Package: zfs_io_priority
 
 When I/O between different zones on a CN compete for disk, their
-zfs_io_priorities are compared, and the ones with higher priority get a larger
+`zfs_io_priorities` are compared, and the ones with higher priority get a larger
 proportion of disk accesses. The proportions are determined by the relative
 differences between this attribute in zones.
 
     "zfs_io_priority": 50
 
+## Package: flexible_disk
+
+When set to `true` the package's `quota` attribute reflects the amount of
+space available for all disks. It only applies when the brand is set to `bhyve`.
+
+Consider the following packages:
+
+**Inflexible package**
+
+        {
+          ...,
+          "quota": 102400,
+          ...,
+        }
+
+
+**Flexible package**
+
+        {
+          ...,
+          "quota": 102400,
+          "flexible_disk": true,
+          ...,
+        }
+
+
+The following table outlines the results when used with various images.
+
+| Image size | Inflexible boot disk size | Inflexible data disk size | Flexible boot disk size | Flexible data disk size |
+| -----------| ------------------------- | ------------------------- | ----------------------- | ----------------------- |
+| 10 GiB     | 10 GiB                    | 100 GiB                   | 10 GiB                  | 90 GiB                  |
+| 90 GiB     | 90 GiB                    | 100 GiB                   | 90 GiB                  | 10 GiB                  |
+| 1 TiB      | 1 TiB                     | 100 GiB                   | Error                   | Error                   |
+
+### Default disks in package
+
+A flexible disk package may specify the default size for disks through the `disks` property.
+These sizes can be overridden by a `disks` attribute when creating a machine.
+
+In this example, any image smaller than 102400 MiB is resized to occupy all of the instance's disk space (102400 MiB).
+
+        {
+          ...,
+          "quota": 102400,
+          "flexible_disk": true,
+          "disks": [ { "size": "remaining" } ],
+          ...,
+        }
+
+
+In this example, all space not allocated to the image remains free for future disk allocations and snapshots.
+
+
+        {
+          ...,
+          "quota": 102400,
+          "flexible_disk": true,
+          "disks": [ { } ],
+          ...,
+        }
+
+`disks`'s size property can take either the value `"remaining"` explained before,
+or a numeric value of size in MiB. For more details see `flexible_disk_size` in `vmadm` man page.
 
 ## Immutable Attributes and Package Persistence
 
