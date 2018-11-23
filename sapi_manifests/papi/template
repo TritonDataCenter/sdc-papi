@@ -163,6 +163,14 @@
         },
         "alloc_server_spread": {
             "type": "string"
+        },
+        "flexible_disk": {
+            "type": "boolean",
+            "index": false
+        },
+        "disks": {
+            "type": "[object]",
+            "index": false
         }
     }
 }

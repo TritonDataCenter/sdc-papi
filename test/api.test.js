@@ -409,7 +409,9 @@ test('POST /packages (fields validation failed)', function (t) {
         description: 'This is a package description, and should be present',
         common_name: 'Regular 128MiB',
         fss: 25,
-        alloc_server_spread: 'invalid'
+        alloc_server_spread: 'invalid',
+        flexible_disk: 'ho-ho-ho!',
+        disks: [ {'foo': 'bar'} ]
     };
 
     client.post('/packages', pkg, function (err, req, res, _) {
@@ -420,31 +422,69 @@ test('POST /packages (fields validation failed)', function (t) {
         t.equal(err.body.message, 'Package is invalid');
 
         var expectedErrs = [
-            { field: 'networks',
-              code: 'Invalid',
-              message: 'must only contain UUIDs' },
-            { field: 'os', code: 'Invalid', message: 'must be string' },
-            { field: 'uuid', code: 'Invalid', message: 'must be UUID' },
-            { field: 'alloc_server_spread',
-              code: 'Invalid',
-              message: 'must be one of: min-ram, random, min-owner' },
-            { field: 'brand',
-              code: 'Invalid',
-              message:
-                'must be one of: bhyve, joyent, joyent-minimal, kvm, lx' },
-            { field: 'max_physical_memory',
-              code: 'Invalid',
-              message: 'must be greater or equal to 64' },
-            { field: 'quota',
-              code: 'Invalid',
-              message: 'must be greater or equal to 1024' },
-            { field: 'quota',
-              code: 'Invalid',
-              message: 'must be a multiple of 1024' },
-            { field: 'zfs_io_priority',
-              code: 'Invalid',
-              message: 'must be greater or equal to 0, and less than or ' +
-                  'equal to 16383' }
+            {
+                field: 'disks',
+                code: 'Invalid',
+                message: 'must only contain Objects with "size" property'
+            },
+            {
+                field: 'flexible_disk',
+                code: 'Invalid',
+                message: 'must be boolean'
+            },
+            {
+                field: 'networks',
+                code: 'Invalid',
+                message: 'must only contain UUIDs'
+            },
+            {
+                field: 'os',
+                code: 'Invalid',
+                message: 'must be string'
+            },
+            {
+                field: 'uuid',
+                code: 'Invalid',
+                message: 'must be UUID'
+            },
+            {
+                field: 'alloc_server_spread',
+                code: 'Invalid',
+                message: 'must be one of: min-ram, random, min-owner'
+            },
+            {
+                field: 'brand',
+                code: 'Invalid',
+                message:
+                    'must be one of: bhyve, joyent, joyent-minimal, kvm, lx'
+            },
+            {
+                field: 'max_physical_memory',
+                code: 'Invalid',
+                message: 'must be greater or equal to 64'
+            },
+            {
+                field: 'quota',
+                code: 'Invalid',
+                message: 'must be greater or equal to 1024'
+            },
+            {
+                field: 'quota',
+                code: 'Invalid',
+                message: 'must be a multiple of 1024'
+            },
+            {
+                field: 'zfs_io_priority',
+                code: 'Invalid',
+                message: 'must be greater or equal to 0, and less than or ' +
+                  'equal to 16383'
+            },
+            {
+                field: 'disks',
+                code: 'Invalid',
+                message: 'disks can be specified only for flexible_disk' +
+                ' packages'
+            }
         ];
         t.deepEqual(err.body.errors, expectedErrs);
 
@@ -472,7 +512,9 @@ test('POST /packages (quota must be multiple of 1024)', function (t) {
         uuid: 'ebb58a8c-b77e-4559-bbf0-19ebd67973f0',
         description: 'This is a package description, and should be present',
         common_name: 'Regular 128MiB',
-        fss: 25
+        fss: 25,
+        flexible_disk: true,
+        disks: [ {} ]
     };
 
     client.post('/packages', pkg, function (err, req, res, _) {
@@ -528,7 +570,11 @@ test('POST /packages (VCPUS exceeding MAX value)', function (t) {
         uuid: 'ebb58a8c-b77e-4559-bbf0-19ebd67973f0',
         description: 'This is a package description, and should be present',
         common_name: 'Regular 128MiB',
-        fss: 25
+        fss: 25,
+        flexible_disk: true,
+        disks: [ {
+            size: 'remaining'
+        } ]
     };
 
     client.post('/packages', pkg, function (err, req, res, _) {
