@@ -1,5 +1,7 @@
+/make_stamps
 /node_modules
 /tmp
+bits
 build
 docs/*.json
 docs/*.html
@@ -10,3 +12,4 @@ smf/manifests/papi.xml
 etc/config.json
 etc/packages.json
 papi_packages.moray
+papi-pkg-*.tar.gz
