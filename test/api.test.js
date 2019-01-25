@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2018, Joyent, Inc.
+ * Copyright (c) 2019, Joyent, Inc.
  */
 
 /*
@@ -120,10 +120,9 @@ var packages = [ {
     zfs_io_priority: 100
 } ];
 
-
-
-var server, client, backend, startTime;
-
+var backend;
+var client;
+var server;
 
 
 test('setup', function (t) {
@@ -156,9 +155,6 @@ test('setup', function (t) {
         });
 
         t.ok(client);
-
-        startTime = +new Date();
-
         t.end();
     });
 });
@@ -205,7 +201,7 @@ test('POST /packages (OK)', function (t) {
             t.ifError(err);
             t.equal(res.statusCode, 201);
 
-            checkDate(t, storedPkg);
+            checkAndStripDateFields(t, storedPkg);
             t.deepEqual(newPkg, storedPkg);
 
             var location = res.headers.location;
@@ -215,7 +211,7 @@ test('POST /packages (OK)', function (t) {
                 t.ifError(err2);
                 t.equal(res2.statusCode, 200);
 
-                checkDate(t, storedPkg2);
+                checkAndStripDateFields(t, storedPkg2);
                 t.deepEqual(newPkg, storedPkg2);
 
                 if (postPkgs.length > 0)
@@ -959,11 +955,12 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
         owner_uuids: ownerUuids,
         skip_validation: true
     }, function (err, req, res, pkg) {
-        t.ifError(err);
-        t.equal(res.statusCode, 200);
-        t.ok(pkg);
+        t.ifError(err, 'should not be error creating package, err=' + err);
+        t.equal(res.statusCode, 200,
+            'CreatePackage status code: ' + res.statusCode);
+        t.ok(pkg, 'created package UUID ' + pkg.uuid);
 
-        checkDate(t, pkg);
+        checkAndStripDateFields(t, pkg);
 
         var newPkg = jsprim.deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
@@ -972,7 +969,7 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
         client.get(url, function (err2, req2, res2, pkg2) {
             t.ifError(err2);
 
-            checkDate(t, pkg2);
+            checkAndStripDateFields(t, pkg2);
             t.deepEqual(pkg2, newPkg);
 
             t.end();
@@ -994,7 +991,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
         t.equal(res.statusCode, 200);
         t.ok(pkg);
 
-        checkDate(t, pkg);
+        checkAndStripDateFields(t, pkg);
 
         var newPkg = jsprim.deepCopy(packages[0]);
         newPkg.owner_uuids = ownerUuids;
@@ -1004,7 +1001,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
         client.get(url, function (err2, req2, res2, pkg2) {
             t.ifError(err2);
 
-            checkDate(t, pkg2);
+            checkAndStripDateFields(t, pkg2);
             t.deepEqual(pkg2, newPkg);
 
             client.put(url, {
@@ -1013,7 +1010,7 @@ test('PUT /packages/:uuid (OK)', function (t) {
             }, function (err3, req3, res3, pkg3) {
                 t.ifError(err3);
 
-                checkDate(t, pkg3);
+                checkAndStripDateFields(t, pkg3);
                 t.deepEqual(pkg3, packages[0]);
 
                 t.end();
@@ -1164,16 +1161,17 @@ function checkNoPkgs(t) {
 
 
 
-function checkDate(t, pkg) {
-    var allowedDelta = 5000;
-
-    var created = +new Date(pkg.created_at);
-    var updated = +new Date(pkg.updated_at);
-
-    t.ok(created - startTime < allowedDelta);
-    t.ok(updated - startTime < allowedDelta);
-
+// Ensure package date fields are like valid dates.
+// Limitation: It would be nice to validate that they are ISO date strings.
+function checkAndStripDateFields(t, pkg) {
+    var created_at = new Date(pkg.created_at);
+    t.ok(typeof (pkg.created_at) === 'string' && !isNaN(created_at),
+        'pkg.created_at is a date string: ' + pkg.created_at);
     delete pkg.created_at;
+
+    var updated_at = new Date(pkg.updated_at);
+    t.ok(typeof (pkg.updated_at) === 'string' && !isNaN(updated_at),
+        'pkg.updated_at is a date string: ' + pkg.updated_at);
     delete pkg.updated_at;
 }
 
@@ -1187,7 +1185,7 @@ function searchAndCheckPkgs(t, query, testFilter) {
 
         var expectedPkgs = packages.filter(testFilter);
 
-        pkgs.forEach(function (p) { checkDate(t, p); });
+        pkgs.forEach(function (p) { checkAndStripDateFields(t, p); });
         t.equal(+res.headers['x-resource-count'], expectedPkgs.length);
         t.deepEqual(pkgs.sort(orderPkgs), expectedPkgs.sort(orderPkgs));
 
@@ -1202,7 +1200,7 @@ function checkPkg1(t) {
         t.ifError(err);
         t.equal(res.statusCode, 200);
 
-        checkDate(t, pkg);
+        checkAndStripDateFields(t, pkg);
         t.deepEqual(packages[0], pkg);
 
         t.end();
