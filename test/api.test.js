@@ -109,6 +109,7 @@ var packages = [ {
     active: true,
     brand: 'bhyve',
     cpu_cap: 300,
+    flexible_disk: true,
     max_lwps: 1000,
     max_physical_memory: 512,
     max_swap: 1024,
@@ -669,6 +670,18 @@ test('GET /packages (Search by name)', function (t) {
 
     var testFilter = function (p) {
         return p.name === name;
+    };
+
+    searchAndCheckPkgs(t, query, testFilter);
+});
+
+
+
+test('GET /packages (Search by flexible_disk)', function (t) {
+    var query = '/packages?flexible_disk=true';
+
+    var testFilter = function (p) {
+        return p.flexible_disk === true;
     };
 
     searchAndCheckPkgs(t, query, testFilter);

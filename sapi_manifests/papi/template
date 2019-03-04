@@ -6,7 +6,7 @@
         "cueballOptions": {
             "resolvers": [ "{{{BINDER_SERVICE}}}" ]
         },
-        "version": 7
+        "version": 8
     },
     "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",
     "first_boot": {{{SERVICE_IS_FIRST_BOOT}}},
@@ -166,7 +166,7 @@
         },
         "flexible_disk": {
             "type": "boolean",
-            "index": false
+            "index": true
         },
         "disks": {
             "type": "[object]",
