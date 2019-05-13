@@ -5,13 +5,12 @@
  */
 
 /*
- * Copyright (c) 2019, Joyent, Inc.
+ * Copyright 2019 Joyent, Inc.
  */
 
 /*
  * Test the Package API endpoints,
  */
-
 
 var fs      = require('fs');
 var path    = require('path');
@@ -25,7 +24,6 @@ var restify = require('restify');
 var test    = require('@smaller/tap').test;
 
 var papi = require('../lib/papi');
-
 
 // If we're in the papi zone, use the papi config. Otherwise assume we're on
 // someone's laptop and they're using the default COAL IP addresses.
@@ -125,7 +123,6 @@ var backend;
 var client;
 var server;
 
-
 test('setup', function (t) {
     var log = new Logger({
         level: process.env.LOG_LEVEL || 'info',
@@ -160,12 +157,8 @@ test('setup', function (t) {
     });
 });
 
-
-
 test('Clean up stale state (before)', cleanUp);
 test('Check no stale packages (before)', checkNoPkgs);
-
-
 
 test('GET /ping', function (t) {
     client.get('/ping', function (err, req, res, health) {
@@ -178,8 +171,6 @@ test('GET /ping', function (t) {
     });
 });
 
-
-
 test('GET /packages', function (t) {
     client.get('/packages', function (err, req, res, pkgs) {
         t.ifError(err);
@@ -189,8 +180,6 @@ test('GET /packages', function (t) {
         t.end();
     });
 });
-
-
 
 test('POST /packages (OK)', function (t) {
     var postPkgs = packages.slice();
@@ -226,8 +215,6 @@ test('POST /packages (OK)', function (t) {
     postPkg();
 });
 
-
-
 test('POST /packages/:uuid (bad fields)', function (t) {
     var badPkg = {
         active: false,
@@ -259,8 +246,6 @@ test('POST /packages/:uuid (bad fields)', function (t) {
         t.end();
     });
 });
-
-
 
 test('POST /packages/:uuid (invalid package name)', function (t) {
     var badPkg = {
@@ -296,8 +281,6 @@ test('POST /packages/:uuid (invalid package name)', function (t) {
         t.end();
     });
 });
-
-
 
 test('POST /packages (missing required fields)', function (t) {
     var pkg = {
@@ -341,8 +324,6 @@ test('POST /packages (missing required fields)', function (t) {
     });
 });
 
-
-
 test('POST /packages (empty required fields)', function (t) {
     var pkg = {
         uuid: '', // uuid gets set if empty or null
@@ -374,8 +355,6 @@ test('POST /packages (empty required fields)', function (t) {
         t.end();
     });
 });
-
-
 
 test('POST /packages (fields validation failed)', function (t) {
     var pkg = {
@@ -489,8 +468,6 @@ test('POST /packages (fields validation failed)', function (t) {
     });
 });
 
-
-
 test('POST /packages (quota must be multiple of 1024)', function (t) {
     var pkg = {
         name: pkgName('fail-quota'),
@@ -532,7 +509,6 @@ test('POST /packages (quota must be multiple of 1024)', function (t) {
     });
 });
 
-
 test('POST /packages (duplicated unique field)', function (t) {
     client.post('/packages', packages[0], function (err, req, res, _pkg) {
         t.ok(err);
@@ -547,7 +523,6 @@ test('POST /packages (duplicated unique field)', function (t) {
         t.end();
     });
 });
-
 
 test('POST /packages (VCPUS exceeding MAX value)', function (t) {
     var pkg = {
@@ -592,10 +567,7 @@ test('POST /packages (VCPUS exceeding MAX value)', function (t) {
     });
 });
 
-
 test('GET /packages/:uuid (OK)', checkPkg1);
-
-
 
 test('GET /packages/:uuid (404)', function (t) {
     var badUuid = uuid();
@@ -612,8 +584,6 @@ test('GET /packages/:uuid (404)', function (t) {
         t.end();
     });
 });
-
-
 
 test('GET /packages (Search by owner_uuids)', function (t) {
     var query = '/packages?owner_uuids=' + config.ufds_admin_uuid;
@@ -634,8 +604,6 @@ test('GET /packages (Search by owner_uuids)', function (t) {
     });
 });
 
-
-
 test('GET /packages (Search by group)', function (t) {
     var query = '/packages?group=ramones';
 
@@ -645,8 +613,6 @@ test('GET /packages (Search by group)', function (t) {
 
     searchAndCheckPkgs(t, query, testFilter);
 });
-
-
 
 test('GET /packages (Search by networks)', function (t) {
     var network = packages[0].networks[1];
@@ -662,8 +628,6 @@ test('GET /packages (Search by networks)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Search by name)', function (t) {
     var name = pkgName(128);
     var query = '/packages?name=' + name;
@@ -675,19 +639,22 @@ test('GET /packages (Search by name)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Search by flexible_disk)', function (t) {
     var query = '/packages?flexible_disk=true';
 
-    var testFilter = function (p) {
-        return p.flexible_disk === true;
-    };
+    client.get(query, function (err, req, res, pkgs) {
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.ok(Array.isArray(pkgs));
 
-    searchAndCheckPkgs(t, query, testFilter);
+        t.ok(pkgs.length > 0, 'Got flexible_disk packages');
+        pkgs.forEach(function checkFlexibleDisk(pkg) {
+            t.ok(pkg.flexible_disk, 'flexible disk');
+        });
+
+        t.end();
+    });
 });
-
-
 
 test('GET /packages (Search by wildcard)', function (t) {
     var name = pkgName('');
@@ -700,8 +667,6 @@ test('GET /packages (Search by wildcard)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Search by multiple wildcard)', function (t) {
     var name = pkgName('');
     var query = '/packages?name=*' + name.slice(1) + '*';
@@ -713,8 +678,6 @@ test('GET /packages (Search by multiple wildcard)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Search by multiple fields)', function (t) {
     var name = pkgName('');
     var query = '/packages?name=' + name + '*&owner_uuids=' + uuid();
@@ -725,8 +688,6 @@ test('GET /packages (Search by multiple fields)', function (t) {
 
     searchAndCheckPkgs(t, query, testFilter);
 });
-
-
 
 test('GET /packages (Search with LDIF injection attempt)', function (t) {
     client.get({
@@ -748,8 +709,6 @@ test('GET /packages (Search with LDIF injection attempt)', function (t) {
     });
 });
 
-
-
 test('GET /packages (Custom filter)', function (t) {
     var name = pkgName('');
     var filter = '(&(name=' + name + '*)(max_physical_memory>=64)' +
@@ -764,8 +723,6 @@ test('GET /packages (Custom filter)', function (t) {
 
     searchAndCheckPkgs(t, query, testFilter);
 });
-
-
 
 test('GET /packages (Custom invalid filter)', function (t) {
     // intentionally missing a '('
@@ -785,8 +742,6 @@ test('GET /packages (Custom invalid filter)', function (t) {
     });
 });
 
-
-
 test('GET /packages (Custom substring filter ignoring case)', function (t) {
     var name = pkgName('');
     var filter = '(name:caseIgnoreSubstringsMatch:=' + name.toUpperCase() +
@@ -800,8 +755,6 @@ test('GET /packages (Custom substring filter ignoring case)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Custom filter ignoring case)', function (t) {
     var name = pkgName(256);
     var filter = '(name:caseIgnoreMatch:=' + name.toUpperCase() + ')';
@@ -814,8 +767,6 @@ test('GET /packages (Custom filter ignoring case)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Search by multiple entries per field)', function (t) {
     var name256 = pkgName(256);
     var name512 = pkgName(512);
@@ -827,8 +778,6 @@ test('GET /packages (Search by multiple entries per field)', function (t) {
 
     searchAndCheckPkgs(t, query, testFilter);
 });
-
-
 
 test('GET /packages (Search by multiple entries and fields)', function (t) {
     var name256 = pkgName(256);
@@ -845,16 +794,12 @@ test('GET /packages (Search by multiple entries and fields)', function (t) {
     searchAndCheckPkgs(t, query, testFilter);
 });
 
-
-
 test('GET /packages (Search by empty multiple entries)', function (t) {
     client.get('/packages?name=[]', function (_err, req, res, _) {
         t.equal(res.statusCode, 404);
         t.end();
     });
 });
-
-
 
 test('PUT /packages/:uuid (immutable fields)', function (t) {
     var immutable = {
@@ -900,11 +845,7 @@ test('PUT /packages/:uuid (immutable fields)', function (t) {
     });
 });
 
-
-
 test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
-
-
 
 test('PUT /packages/:uuid (validation failed)', function (t) {
     client.put('/packages/' + packages[0].uuid, {
@@ -927,11 +868,7 @@ test('PUT /packages/:uuid (validation failed)', function (t) {
     });
 });
 
-
-
 test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
-
-
 
 test('PUT /packages/:uuid (bad fields)', function (t) {
     client.put('/packages/' + packages[0].uuid, {
@@ -954,11 +891,7 @@ test('PUT /packages/:uuid (bad fields)', function (t) {
     });
 });
 
-
-
 test('GET /packages/:uuid (OK after failed PUT)', checkPkg1);
-
-
 
 test('PUT /packages/:uuid (skip-validation)', function (t) {
     var url = '/packages/' + packages[0].uuid;
@@ -989,8 +922,6 @@ test('PUT /packages/:uuid (skip-validation)', function (t) {
         });
     });
 });
-
-
 
 test('PUT /packages/:uuid (OK)', function (t) {
     var url = '/packages/' + packages[0].uuid;
@@ -1032,8 +963,6 @@ test('PUT /packages/:uuid (OK)', function (t) {
     });
 });
 
-
-
 test('PUT /packages/:uuid (404)', function (t) {
     var badUuid = uuid();
 
@@ -1051,8 +980,6 @@ test('PUT /packages/:uuid (404)', function (t) {
     });
 });
 
-
-
 test('DELETE /packages/:uuid (405)', function (t) {
     client.del('/packages/' + packages[0].uuid, function (err, req, res) {
         t.ok(err);
@@ -1068,11 +995,7 @@ test('DELETE /packages/:uuid (405)', function (t) {
     });
 });
 
-
-
 test('GET /packages/:uuid (OK after failed DELETE)', checkPkg1);
-
-
 
 test('DELETE /packages/:uuid (404)', function (t) {
     var badUuid = uuid();
@@ -1091,8 +1014,6 @@ test('DELETE /packages/:uuid (404)', function (t) {
     });
 });
 
-
-
 test('DELETE /packages/:uuid (--force)', function (t) {
     var url = '/packages/' + packages[0].uuid;
 
@@ -1108,13 +1029,8 @@ test('DELETE /packages/:uuid (--force)', function (t) {
 });
 
 
-
-
 test('Clean up stale state (after)', cleanUp);
 test('Check no stale packages (after)', checkNoPkgs);
-
-
-
 
 test('teardown', function (t) {
     client.close();
@@ -1126,8 +1042,6 @@ test('teardown', function (t) {
         setTimeout(function () { process.exit(0); }, 200);
     });
 });
-
-
 
 function cleanUp(t) {
     function deletePkgs(pkgs) {
@@ -1153,8 +1067,6 @@ function cleanUp(t) {
     });
 }
 
-
-
 function checkNoPkgs(t) {
     function checkPkgs(pkgs) {
         if (pkgs.length === 0)
@@ -1172,8 +1084,6 @@ function checkNoPkgs(t) {
     checkPkgs(packages.map(function (p) { return p.uuid; }));
 }
 
-
-
 // Ensure package date fields are like valid dates.
 // Limitation: It would be nice to validate that they are ISO date strings.
 function checkAndStripDateFields(t, pkg) {
@@ -1188,8 +1098,6 @@ function checkAndStripDateFields(t, pkg) {
     delete pkg.updated_at;
 }
 
-
-
 function searchAndCheckPkgs(t, query, testFilter) {
     client.get(query, function (err, req, res, pkgs) {
         t.ifError(err);
@@ -1197,7 +1105,6 @@ function searchAndCheckPkgs(t, query, testFilter) {
         t.ok(Array.isArray(pkgs));
 
         var expectedPkgs = packages.filter(testFilter);
-
         pkgs.forEach(function (p) { checkAndStripDateFields(t, p); });
         t.equal(+res.headers['x-resource-count'], expectedPkgs.length);
         t.deepEqual(pkgs.sort(orderPkgs), expectedPkgs.sort(orderPkgs));
@@ -1205,8 +1112,6 @@ function searchAndCheckPkgs(t, query, testFilter) {
         t.end();
     });
 }
-
-
 
 function checkPkg1(t) {
     client.get('/packages/' + packages[0].uuid, function (err, req, res, pkg) {
@@ -1220,21 +1125,15 @@ function checkPkg1(t) {
     });
 }
 
-
-
 function uuid() {
     return libuuid.create();
 }
-
-
 
 function orderPkgs(a, b) {
     if (a.uuid < b.uuid)
         return 1;
     return -1;
 }
-
-
 
 function pkgName(suffix) {
     return pkgNamePrefix + suffix;
