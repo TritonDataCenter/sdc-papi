@@ -22,6 +22,7 @@
 # included Makefiles (in eng.git) so that other teams can use them too.
 #
 NAME		:= papi
+AGENT_PREBUILT_AGENT_BRANCH=ndp
 #
 # Tools
 #
