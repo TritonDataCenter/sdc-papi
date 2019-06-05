@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright 2019 Joyent, Inc.
  */
 
 /*
@@ -72,7 +72,7 @@ function usage(code, message) {
  */
 
 function run() {
-    return papi.createServer({
+    papi.createServer({
         config: PARSED.file || DEFAULT_CFG,
         overrides: PARSED,
         log: LOG
@@ -86,7 +86,7 @@ function run() {
     });
 }
 
-///--- Mainline
+// --- Mainline
 
 PARSED = nopt(opts, shortOpts, process.argv, 2);
 if (PARSED.help) {

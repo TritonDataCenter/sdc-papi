@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2019, Joyent, Inc.
+# Copyright 2019 Joyent, Inc.
 #
 
 #
@@ -34,9 +34,8 @@ DOC_FILES	 = index.md
 RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
 EXTRA_DOC_DEPS += deps/restdown-brand-remora/.git
 JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
+ESLINT_FILES	= $(JS_FILES)
 JSON_FILES	 = package.json
-JSL_CONF_NODE	 = tools/jsl.node.conf
-JSL_FILES_NODE	 = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 SMF_MANIFESTS_IN = smf/manifests/papi.xml.in
