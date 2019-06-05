@@ -16,7 +16,7 @@
     "nopt": "2.0.0",
     "restify": "4.2.0",
     "sdc-clients": "git+https://github.com/joyent/node-sdc-clients.git#rfd-35-cls",
-    "triton-tracer": "git+https://github.com/joshwilsdon/triton-tracer.git#rfd-35-cls",
+    "triton-tracer": "git+https://github.com/joyent/triton-tracer.git#rfd-35-cls",
     "vasync": "1.6.4",
     "verror": "1.10.0",
     "jsprim": "^1.3.1"
