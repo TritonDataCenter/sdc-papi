@@ -272,7 +272,7 @@ test('POST /packages/:uuid (invalid package name)', function (t) {
             { field: 'name',
               code: 'Invalid',
               message: 'must match ' +
-                '/^[a-zA-Z0-9]([a-zA-Z0-9\\_\\-\\.]+)?[a-zA-Z0-9]$/ and not' +
+                '/^[a-zA-Z0-9]([a-zA-Z0-9_\\-.]+)?[a-zA-Z0-9]$/ and not' +
                 ' contain repeated \'-\', \'_\' or \'.\' characters'
             }
         ];
