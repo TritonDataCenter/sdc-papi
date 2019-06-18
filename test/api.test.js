@@ -21,7 +21,9 @@ var jsprim = require('jsprim');
 var libuuid = require('libuuid');
 var Logger  = require('bunyan');
 var restify = require('restify');
+var restifyClients = require('restify-clients');
 var test    = require('@smaller/tap').test;
+var tritonTracer = require('triton-tracer');
 
 var papi = require('../lib/papi');
 
@@ -131,6 +133,8 @@ test('setup', function (t) {
         serializers: restify.bunyan.serializers
     });
 
+    tritonTracer.init({log: log});
+
     papi.createServer({
         config: cfgFile,
         log: log,
@@ -143,7 +147,7 @@ test('setup', function (t) {
         t.ok(server);
         t.ok(backend);
 
-        client = restify.createJsonClient({
+        client = restifyClients.createJsonClient({
             log: s.log,
             url: 'http://127.0.0.1:' + config.port,
             version: '*',
