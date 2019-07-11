@@ -45,6 +45,10 @@ NODE_PREBUILT_VERSION=v6.17.0
 ifeq ($(shell uname -s),SunOS)
         NODE_PREBUILT_TAG=zone64
         NODE_PREBUILT_IMAGE=c2c31b00-1d60-11e9-9a77-ff9f06554b0f
+else
+	NPM=npm
+	NODE=node
+	NPM_EXEC=$(shell which npm)
 endif
 
 ENGBLD_USE_BUILDIMAGE	= true
