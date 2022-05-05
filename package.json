@@ -1,12 +1,12 @@
 {
   "name": "sdc-papi",
   "description": "Packages API",
-  "version": "7.2.3",
-  "author": "Joyent (joyent.com)",
+  "version": "7.2.4",
+  "author": "MNX Cloud (mnx.io)",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:joyent/sdc-papi.git"
+    "url": "git+ssh://git@github.com:TritonDataCenter/sdc-papi.git"
   },
   "dependencies": {
     "backoff": "2.3.0",
