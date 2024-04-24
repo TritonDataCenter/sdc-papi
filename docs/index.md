@@ -11,6 +11,7 @@ apisections: PackageObjects, Packages, Ping, Changelog
 
 <!--
     Copyright (c) 2018, Joyent, Inc.
+    Copyright 2024 MNX Cloud, Inc.
 -->
 
 # Triton Package API
@@ -21,7 +22,7 @@ example, packages can specify the amount of RAM and CPU a new machine will use,
 and what the disk quota will be.
 
 Some of the package attributes are used by `vmadm` to create or resize machines.
-Please refer to the [vmadm man page](https://github.com/joyent/smartos-live/blob/master/src/vm/man/vmadm.1m.md#properties)
+Please refer to the [vmadm man page](https://github.com/TritonDataCenter/smartos-live/blob/master/src/vm/man/vmadm.1m.md#properties)
 to review the meaning of these properties for the machines.
 
 
