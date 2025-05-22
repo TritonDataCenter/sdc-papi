@@ -1,7 +1,7 @@
 {
   "name": "sdc-papi",
   "description": "Packages API",
-  "version": "7.2.4",
+  "version": "7.2.5",
   "author": "MNX Cloud (mnx.io)",
   "private": true,
   "repository": {

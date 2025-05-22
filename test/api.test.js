@@ -6,6 +6,7 @@
 
 /*
  * Copyright 2019 Joyent, Inc.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 /*
@@ -533,10 +534,10 @@ test('POST /packages (VCPUS exceeding MAX value)', function (t) {
         quota: 1024,
         max_swap: 256,
         cpu_cap: 350,
-        max_lwps: 2000,
+        max_lwps: 3000,
         zfs_io_priority: 100,
         'default': true,
-        vcpus: 50,
+        vcpus: 72,
         active: true,
         group: 'ramones',
         uuid: 'ebb58a8c-b77e-4559-bbf0-19ebd67973f0',
@@ -559,7 +560,7 @@ test('POST /packages (VCPUS exceeding MAX value)', function (t) {
         var expectedErrs = [ {
             field: 'vcpus',
             code: 'Invalid',
-            message: 'must be greater or equal to 1, and less or equal to 48'
+            message: 'must be greater or equal to 1, and less or equal to 64'
         }];
         t.deepEqual(err.body.errors, expectedErrs);
 
